@@ -144,9 +144,9 @@ func newPodForCR(cr *cachev1alpha1.MySQL) *corev1.Pod {
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{
 				{
-					Name:    "busybox",
-					Image:   "busybox",
-					Command: []string{"sleep", "3600"},
+					Name:  "mysqldb",
+					Image: "docker.io/mysql:latest",
+					// Command: []string{"sleep", "3600"},
 					Env: []corev1.EnvVar{
 						{
 							Name:  "MYSQL_ROOT_PASSWORD",

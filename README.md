@@ -103,7 +103,9 @@ operator-sdk add controller --api-version=cache.codingbee.net/v1alpha1 --kind=My
 This ends up creating the file `pkg/controller/add_mysql.go` and the folder `pkg/controller/mysql/` along with all it's content.
 
 
-Next update controller to make use of the mysql env vars - https://github.com/Sher-Chowdhury/mysql-operator/commit/2ca59bc874221c67080cb8094952d3282ed1ba58
+Next update controller to make use of the mysql env vars - https://github.com/Sher-Chowdhury/mysql-operator/blob/6e4610c2931bb7ff5dfb140b3a8b8feaec484fe7/pkg/controller/mysql/mysql_controller.go#L150-L166 and 
+https://github.com/Sher-Chowdhury/mysql-operator/blob/6e4610c2931bb7ff5dfb140b3a8b8feaec484fe7/pkg/controller/mysql/mysql_controller.go#L137
+
 
 
 Now deploy the crd (you can also deploy the example cr too if you want too):
@@ -111,6 +113,9 @@ Now deploy the crd (you can also deploy the example cr too if you want too):
 ```
 kubectl apply -f deploy/crds/cache.codingbee.net_mysqls_crd.yaml
 ```
+
+
+Update the controller to use the mysql image, rather than the busybox image. 
 
 
 
@@ -133,12 +138,18 @@ sed -i "" "s|REPLACE_IMAGE|quay.io/${account}/${image_name}:${tag_version}|g" de
 
 
 
+
+
+
 ```
 kubectl apply -f deploy/role.yaml
 kubectl apply -f deploy/role_binding.yaml
 kubectl apply -f deploy/service_account.yaml
 kubectl apply -f deploy/operator.yaml
 ```
+
+
+
 
 
 
