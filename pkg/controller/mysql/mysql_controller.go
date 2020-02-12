@@ -134,6 +134,7 @@ func newPodForCR(cr *cachev1alpha1.MySQL) *corev1.Pod {
 	labels := map[string]string{
 		"app": cr.Name,
 	}
+	mysqlEnvVars := cr.Spec.Environment
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name + "-pod",
@@ -146,6 +147,12 @@ func newPodForCR(cr *cachev1alpha1.MySQL) *corev1.Pod {
 					Name:    "busybox",
 					Image:   "busybox",
 					Command: []string{"sleep", "3600"},
+				},
+				[]corev1.EnvVar{
+					MYSQL_ROOT_PASSWORD: mysqlEnvVars.MysqlRootPassword,
+					MYSQL_DATABASE:      mysqlEnvVars.MysqlDatabase,
+					MYSQL_USER:          mysqlEnvVars.MysqlUser,
+					MYSQL_PASSWORD:      mysqlEnvVars.MysqlPassword,
 				},
 			},
 		},
