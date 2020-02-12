@@ -1,0 +1,10 @@
+apiVersion: cache.codingbee.net/v1alpha1
+kind: MySQL
+metadata:
+  name: my-mysql-db
+spec:
+  environment:
+    mysql_database: wordpressDB
+    mysql_password: wpPassword
+    mysql_root_password: wpAdminPassword
+    mysql_user: wpuser

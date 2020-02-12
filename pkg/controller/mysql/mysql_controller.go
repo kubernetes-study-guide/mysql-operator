@@ -147,12 +147,24 @@ func newPodForCR(cr *cachev1alpha1.MySQL) *corev1.Pod {
 					Name:    "busybox",
 					Image:   "busybox",
 					Command: []string{"sleep", "3600"},
-				},
-				[]corev1.EnvVar{
-					MYSQL_ROOT_PASSWORD: mysqlEnvVars.MysqlRootPassword,
-					MYSQL_DATABASE:      mysqlEnvVars.MysqlDatabase,
-					MYSQL_USER:          mysqlEnvVars.MysqlUser,
-					MYSQL_PASSWORD:      mysqlEnvVars.MysqlPassword,
+					Env: []corev1.EnvVar{
+						{
+							Name:  "MYSQL_ROOT_PASSWORD",
+							Value: mysqlEnvVars.MysqlRootPassword,
+						},
+						{
+							Name:  "MYSQL_DATABASE",
+							Value: mysqlEnvVars.MysqlDatabase,
+						},
+						{
+							Name:  "MYSQL_USER",
+							Value: mysqlEnvVars.MysqlUser,
+						},
+						{
+							Name:  "MYSQL_PASSWORD",
+							Value: mysqlEnvVars.MysqlPassword,
+						},
+					},
 				},
 			},
 		},

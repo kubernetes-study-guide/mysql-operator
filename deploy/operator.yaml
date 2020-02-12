@@ -16,7 +16,7 @@ spec:
       containers:
         - name: mysql-operator
           # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: quay.io/sher_chowdhury/mysql-operator:v0.0.1
           command:
           - mysql-operator
           imagePullPolicy: Always

@@ -103,6 +103,48 @@ operator-sdk add controller --api-version=cache.codingbee.net/v1alpha1 --kind=My
 This ends up creating the file `pkg/controller/add_mysql.go` and the folder `pkg/controller/mysql/` along with all it's content.
 
 
+Next update controller to make use of the mysql env vars - https://github.com/Sher-Chowdhury/mysql-operator/commit/2ca59bc874221c67080cb8094952d3282ed1ba58
+
+
+Now deploy the crd (you can also deploy the example cr too if you want too):
+
+```
+kubectl apply -f deploy/crds/cache.codingbee.net_mysqls_crd.yaml
+```
+
+
+
+
+Now deploy the operator. Theres 2 ways to do that. deploy it as a pod, or run it locally. 
+
+### Deploy operator as a container
+
+First build an image that has your controller baked in:
+
+```
+account=sher_chowdhury
+image_name=mysql-operator
+tag_version=v0.0.1
+docker login quay.io
+operator-sdk build quay.io/${account}/${image_name}:${tag_version}
+docker push quay.io/${account}/${image_name}:${tag_version}
+sed -i "" "s|REPLACE_IMAGE|quay.io/${account}/${image_name}:${tag_version}|g" deploy/operator.yaml
+```
+
+
+
+```
+kubectl apply -f deploy/role.yaml
+kubectl apply -f deploy/role_binding.yaml
+kubectl apply -f deploy/service_account.yaml
+kubectl apply -f deploy/operator.yaml
+```
+
+
+
+
+
+
 
 # References
 
