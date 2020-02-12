@@ -17,7 +17,7 @@ cd mysql-operator
 
 
 ```
-operator-sdk add api --api-version=cache.codingbee.net/v1alpha1 --kind=Wordpress  # kind needs to start with uppercase
+operator-sdk add api --api-version=cache.codingbee.net/v1alpha1 --kind=MySQL  # kind needs to start with uppercase
 ```
 
 This would have created a crd and a sample cr file, that you can try deploying at this stage. They look like this:
@@ -94,3 +94,16 @@ Next run the following to get the changes reflected in the crd file:
 ```
 operator-sdk generate crds
 ```
+
+Now let's create our operator's controller:
+
+```
+operator-sdk add controller --api-version=cache.codingbee.net/v1alpha1 --kind=MySQL
+```
+This ends up creating the file `pkg/controller/add_mysql.go` and the folder `pkg/controller/mysql/` along with all it's content.
+
+
+
+# References
+
+https://github.com/operator-framework/operator-sdk/blob/v0.15.1/doc/user-guide.md
