@@ -122,9 +122,9 @@ Now deploy the operator. Theres 2 ways to do that. deploy it as a pod, or run it
 First build an image that has your controller baked in:
 
 ```
-account=sher_chowdhury
-image_name=mysql-operator
-tag_version=v0.0.1
+export account=sher_chowdhury
+export image_name=mysql-operator
+export tag_version=v0.0.1
 docker login quay.io
 operator-sdk build quay.io/${account}/${image_name}:${tag_version}
 docker push quay.io/${account}/${image_name}:${tag_version}
