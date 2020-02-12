@@ -7,11 +7,24 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// EnvironmentVariables mirrors - https://hub.docker.com/_/mysql#Environment_Variables (sher-start)
+type EnvironmentVariables struct {
+	MysqlRootPassword string `json:"mysql_root_password"`
+	MysqlDatabase     string `json:"mysql_database"`
+	MysqlUser         string `json:"mysql_user"`
+	MysqlPassword     string `json:"mysql_password"`
+}
+
+// sher-end
+
 // MySQLSpec defines the desired state of MySQL
 type MySQLSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	// sher-start
+	Environment EnvironmentVariables `json:"environment"`
+	// sher-end
 }
 
 // MySQLStatus defines the observed state of MySQL
