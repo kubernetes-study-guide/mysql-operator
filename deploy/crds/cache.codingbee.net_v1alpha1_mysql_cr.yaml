@@ -1,0 +1,7 @@
+apiVersion: cache.codingbee.net/v1alpha1
+kind: MySQL
+metadata:
+  name: example-mysql
+spec:
+  # Add fields here
+  size: 3
