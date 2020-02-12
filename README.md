@@ -81,3 +81,10 @@ spec:
   size: 3
 ```
 
+Added custom setting to pkg/apis/cache/v1alpha1/mysql_types.go. 
+
+For these changes to get propated to the rest of the repo, run:
+
+```
+operator-sdk generate k8s
+```
