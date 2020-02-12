@@ -88,3 +88,9 @@ For these changes to get propated to the rest of the repo, run:
 ```
 operator-sdk generate k8s
 ```
+
+Next run the following to get the changes reflected in the crd file:
+
+```
+operator-sdk generate crds
+```
