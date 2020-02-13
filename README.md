@@ -207,7 +207,16 @@ This will end up listing the "wordpressDB" database.
 
 ## Now add a service object
 
-here we've added a service object - github.com.....
+here we've added a service object - https://github.com/Sher-Chowdhury/mysql-operator/commit/a6f8df1a8bbde96a0f041ab137672d4d4361f3e8
+
+The main changes have been done to the pkg/controller/mysql/mysql_controller.go file. We had to add 3 sections:
+
+1. A new watch block for the service. This watch block will in trigger the reconciler if and when it notices a change has occured. It does that by putting something onto a queue. 
+2. A new block in reconcile function - this calls the third function, then starts the actual loop. Inside this loop it tries to create the object. The loop exits once the object in question is created. Otherwise it keeps calling itself from inside the loop.  
+3. created the new newServiceForCR. This function just generates the yaml file that will get used to create the object. 
+
+
+
 
 Now perform a retest. First we redeploy the updated operator and recreate the cr:
 

@@ -111,7 +111,7 @@ func (r *ReconcileMySQL) Reconcile(request reconcile.Request) (reconcile.Result,
 		return reconcile.Result{}, err
 	}
 
-	// Define a new Pod object
+	// Define a new Pod object, this is a bit like writing a pod yaml file. But not do kubectl apply yet.
 	pod := newPodForCR(instance)
 
 	// Set MySQL instance as the owner and controller
@@ -124,6 +124,7 @@ func (r *ReconcileMySQL) Reconcile(request reconcile.Request) (reconcile.Result,
 	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		reqLogger.Info("Creating a new Pod", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
+		// This create line is essentially doing a kubectl create command.
 		err = r.client.Create(context.TODO(), pod)
 		if err != nil {
 			return reconcile.Result{}, err
@@ -150,6 +151,7 @@ func (r *ReconcileMySQL) Reconcile(request reconcile.Request) (reconcile.Result,
 	err = r.client.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, foundservice)
 	if err != nil && errors.IsNotFound(err) {
 		reqLogger.Info("Creating a new Service", "Service.Namespace", service.Namespace, "Service.Name", service.Name)
+		// This create line is essentially doing a kubectl create command.
 		err = r.client.Create(context.TODO(), service)
 		if err != nil {
 			return reconcile.Result{}, err
