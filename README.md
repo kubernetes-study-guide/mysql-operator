@@ -138,7 +138,7 @@ sed -i "" "s|REPLACE_IMAGE|quay.io/${account}/${image_name}:${tag_version}|g" de
 
 
 
-
+Now we do the deployment (assuming crd was already deployed, see above):
 
 
 ```
@@ -148,13 +148,116 @@ kubectl apply -f deploy/service_account.yaml
 kubectl apply -f deploy/operator.yaml
 ```
 
+check the operator pod is now up:
+
+```
+kubectl get pods
+```
+
+
+After that we can deploy our example cr:
+
+```
+kubectl apply -f deploy/crds/my-mysql-db-cr.yaml
+```
+
+Then check if if worked:
+
+```
+kubectl get mysql
+kubectl get pods
+```
+
+if it didn't work. then take a look at the operator's pod's log:
+
+```
+kubectl log mysql-operator-xxxx
+```
+
+
+if you find the problem, fix it. Then redeploy newer version of the operator and retest, do:
+```
+export account=sher_chowdhury
+export image_name=mysql-operator
+export tag_version=v0.0.1
+operator-sdk build quay.io/${account}/${image_name}:${tag_version}
+docker push quay.io/${account}/${image_name}:${tag_version}
+kubectl replace -f deploy/operator.yaml
+kubectl replace -f deploy/crds/my-mysql-db-cr.yaml
+```
+
+Once your mysqldb pod is present, you can test it:
+
+You can test your pod by running:
+
+```
+kubectl exec -it <mysql-pod-name> -- bash
+mysql -u root -h localhost -p$MYSQL_ROOT_PASSWORD
+```
+
+Then in the msyql prompt, run:
+
+```
+show databases;
+```
+
+This will end up listing the "wordpressDB" database. 
 
 
 
+## Now add a service object
+
+here we've added a service object - github.com.....
+
+Now perform a retest. First we redeploy the updated operator and recreate the cr:
+
+```
+export account=sher_chowdhury
+export image_name=mysql-operator
+export tag_version=v0.0.1
+operator-sdk build quay.io/${account}/${image_name}:${tag_version}
+docker push quay.io/${account}/${image_name}:${tag_version}
+kubectl replace -f deploy/operator.yaml
+kubectl replace -f deploy/crds/my-mysql-db-cr.yaml
+```
 
 
+Now we can test this new mysqldb service by running:
+
+```
+$ kubectl run -it --image=mysql:latest client -- bash
+export MYSQL_ROOT_PASSWORD=wpAdminPassword
+mysql -u root -h my-mysql-db-service -p$MYSQL_ROOT_PASSWORD
+```
 
 
+Then in the msyql prompt, run:
+
+```
+show databases;
+```
+
+This will end up listing the "wordpressDB" database. 
+
+
+You should also try deleting your pods and services and it will get recreated by the operator.
+
+## Testing
+
+You can test your pod by running:
+
+```
+kubectl exec -it <mysql-pod-name> -- bash
+mysql -u root -h localhost -p$MYSQL_ROOT_PASSWORD
+```
+
+Then in the msyql prompt, run:
+
+```
+show databases;
+```
+
+This will end up listing the "wordpressDB" database. 
 
 
 # References
