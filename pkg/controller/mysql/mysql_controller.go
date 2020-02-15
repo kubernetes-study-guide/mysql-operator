@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cachev1alpha1 "github.com/Sher-Chowdhury/mysql-operator/pkg/apis/cache/v1alpha1"
+	pods "github.com/Sher-Chowdhury/mysql-operator/pkg/controller/mysql/resources/pods"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -112,7 +113,7 @@ func (r *ReconcileMySQL) Reconcile(request reconcile.Request) (reconcile.Result,
 	}
 
 	// Define a new Pod object, this is a bit like writing a pod yaml file. But not do kubectl apply yet.
-	pod := newPodForCR(instance)
+	pod := pods.NewPodForCR(instance)
 
 	// Set MySQL instance as the owner and controller
 	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
@@ -165,48 +166,6 @@ func (r *ReconcileMySQL) Reconcile(request reconcile.Request) (reconcile.Result,
 	reqLogger.Info("Skip reconcile: Service already exists", "Service.Namespace", foundservice.Namespace, "Pod.Name", foundservice.Name)
 
 	return reconcile.Result{}, nil
-}
-
-// newPodForCR returns a busybox pod with the same name/namespace as the cr
-func newPodForCR(cr *cachev1alpha1.MySQL) *corev1.Pod {
-	labels := map[string]string{
-		"app": cr.Name,
-	}
-	mysqlEnvVars := cr.Spec.Environment
-	return &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
-			Namespace: cr.Namespace,
-			Labels:    labels,
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:  "mysqldb",
-					Image: "docker.io/mysql:latest",
-					// Command: []string{"sleep", "3600"},
-					Env: []corev1.EnvVar{
-						{
-							Name:  "MYSQL_ROOT_PASSWORD",
-							Value: mysqlEnvVars.MysqlRootPassword,
-						},
-						{
-							Name:  "MYSQL_DATABASE",
-							Value: mysqlEnvVars.MysqlDatabase,
-						},
-						{
-							Name:  "MYSQL_USER",
-							Value: mysqlEnvVars.MysqlUser,
-						},
-						{
-							Name:  "MYSQL_PASSWORD",
-							Value: mysqlEnvVars.MysqlPassword,
-						},
-					},
-				},
-			},
-		},
-	}
 }
 
 // newServiceForCR returns a service object with the same name/namespace as the cr
