@@ -251,22 +251,13 @@ This will end up listing the "wordpressDB" database.
 
 You should also try deleting your pods and services and it will get recreated by the operator.
 
-## Testing
 
-You can test your pod by running:
 
-```
-kubectl exec -it <mysql-pod-name> -- bash
-mysql -u root -h localhost -p$MYSQL_ROOT_PASSWORD
-```
 
-Then in the msyql prompt, run:
 
-```
-show databases;
-```
+## organise our code into seperate files. 
 
-This will end up listing the "wordpressDB" database. 
+
 
 
 # References
