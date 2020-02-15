@@ -81,13 +81,15 @@ spec:
   size: 3
 ```
 
-Added custom setting to pkg/apis/cache/v1alpha1/mysql_types.go. 
+Added custom settings to pkg/apis/cache/v1alpha1/mysql_types.go - https://github.com/Sher-Chowdhury/mysql-operator/commit/a9ae8d85f8ddda4e3c6d7b3713f1dee03b5fc5f5#
 
-For these changes to get propated to the rest of the repo, run:
+For these changes to get propagated to the rest of the repo, run:
 
 ```
 operator-sdk generate k8s
 ```
+
+here's the resulting change - https://github.com/Sher-Chowdhury/mysql-operator/commit/10250ab5ee20d87a27f67dea6baff73600862f35
 
 Next run the following to get the changes reflected in the crd file:
 
@@ -95,12 +97,15 @@ Next run the following to get the changes reflected in the crd file:
 operator-sdk generate crds
 ```
 
+Here's the resulting change - https://github.com/Sher-Chowdhury/mysql-operator/commit/551f703ecd5315c592081ab4b86e34c25fe81f44
+
 Now let's create our operator's controller:
 
 ```
 operator-sdk add controller --api-version=cache.codingbee.net/v1alpha1 --kind=MySQL
 ```
-This ends up creating the file `pkg/controller/add_mysql.go` and the folder `pkg/controller/mysql/` along with all it's content.
+
+This ends up creating the file `pkg/controller/add_mysql.go` and the folder `pkg/controller/mysql/` along with all it's content - https://github.com/Sher-Chowdhury/mysql-operator/commit/a29ecf7c5247b448d47e68e412bfc9877199df9e
 
 
 Next update controller to make use of the mysql env vars - https://github.com/Sher-Chowdhury/mysql-operator/blob/6e4610c2931bb7ff5dfb140b3a8b8feaec484fe7/pkg/controller/mysql/mysql_controller.go#L150-L166 and 
@@ -114,15 +119,64 @@ Now deploy the crd (you can also deploy the example cr too if you want too):
 kubectl apply -f deploy/crds/cache.codingbee.net_mysqls_crd.yaml
 ```
 
+The above is bit like creating a new table for storing mysql cr data in etcd. 
 
-Update the controller to use the mysql image, rather than the busybox image. 
+After that you can list your mysql instances:
+
+```
+$ kubectl get mysql
+No resources found in default namespace.
+```
+
+Now you can 
+
+```
+$ kubectl apply -f deploy/crds/my-mysql-db-cr.yaml  
+
+mysql.cache.codingbee.net/my-mysql-db created
+```
+
+This simply creates a new entry in the new table created inside etcd. 
+
+```
+$ kubectl get mysql                                                      
+NAME          AGE
+my-mysql-db   22s
+
+
+$ kubectl get mysql my-mysql-db -o yaml
+apiVersion: cache.codingbee.net/v1alpha1
+kind: MySQL
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"cache.codingbee.net/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"my-mysql-db","namespace":"default"},"spec":{"environment":{"mysql_database":"wordpressDB","mysql_password":"wpPassword","mysql_root_password":"wpAdminPassword","mysql_user":"wpuser"}}}
+  creationTimestamp: "2020-02-15T13:36:06Z"
+  generation: 1
+  name: my-mysql-db
+  namespace: default
+  resourceVersion: "154981"
+  selfLink: /apis/cache.codingbee.net/v1alpha1/namespaces/default/mysqls/my-mysql-db
+  uid: 9b3601a6-de87-4f0c-b849-5cd385472ee4
+spec:
+  environment:
+    mysql_database: wordpressDB
+    mysql_password: wpPassword
+    mysql_root_password: wpAdminPassword
+    mysql_user: wpuser
+```
+
+
+Update the controller to use the mysql image, rather than the busybox image - https://github.com/Sher-Chowdhury/mysql-operator/commit/0bc124b3447dea2d53a16bd42f1e084abd306b83
 
 
 
 
 Now deploy the operator. Theres 2 ways to do that. deploy it as a pod, or run it locally. 
 
-### Deploy operator as a container
+### Approach 1 - Deploy operator as a container (production approach)
+
+This involves creating an image with your operator installed inside it, then push that image up to a registry, e.g. dockerhub, quay.io. 
 
 First build an image that has your controller baked in:
 
@@ -135,6 +189,9 @@ operator-sdk build quay.io/${account}/${image_name}:${tag_version}
 docker push quay.io/${account}/${image_name}:${tag_version}
 sed -i "" "s|REPLACE_IMAGE|quay.io/${account}/${image_name}:${tag_version}|g" deploy/operator.yaml
 ```
+
+In this example, we have made our operator image publicly available. Extra steps are needed if you want your image to be private. 
+
 
 
 
@@ -153,6 +210,27 @@ check the operator pod is now up:
 ```
 kubectl get pods
 ```
+
+To delete your operator from the cluster, do:
+
+```
+$ kubectl delete -f deploy/
+```
+
+
+
+
+### Approach 2 - Run it locally (quicker developmental approach)
+
+This approach is better for developing your operator. Because it's faster.  
+
+```
+export OPERATOR_NAME=mysql-operator
+operator-sdk run --local --namespace=default
+```
+
+
+
 
 
 After that we can deploy our example cr:
