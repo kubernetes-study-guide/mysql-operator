@@ -357,9 +357,38 @@ I did the same thing for the NewServiceForCR function too - https://github.com/S
 
 
 
+# setup up status info for our CR. 
+
+At the moment `kubectl get mysql` only has 2 columns, name and age. We want to add more. 
 
 
-## organise our code into seperate files. 
+```
+$ kubectl get mysql my-mysql-db
+NAME          AGE
+my-mysql-db   2m52s
+
+$ kubectl get mysql my-mysql-db -o yaml
+apiVersion: cache.codingbee.net/v1alpha1
+kind: MySQL
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"cache.codingbee.net/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"my-mysql-db","namespace":"default"},"spec":{"environment":{"mysql_database":"wordpressDB","mysql_password":"wpPassword","mysql_root_password":"wpAdminPassword","mysql_user":"wpuser"}}}
+  creationTimestamp: "2020-02-16T10:33:19Z"
+  generation: 1
+  name: my-mysql-db
+  namespace: default
+  resourceVersion: "196765"
+  selfLink: /apis/cache.codingbee.net/v1alpha1/namespaces/default/mysqls/my-mysql-db
+  uid: b308c6e0-cede-482b-bf06-083dc50523be
+spec:
+  environment:
+    mysql_database: wordpressDB
+    mysql_password: wpPassword
+    mysql_root_password: wpAdminPassword
+    mysql_user: wpuser
+```
+
 
 
 
