@@ -24,6 +24,8 @@ type MySQLSpec struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	// sher-start
 	Environment EnvironmentVariables `json:"environment"`
+	// here's a more sophisticated example:
+	// https://github.com/Sher-Chowdhury/prometheus-jmx-exporter-operator/blob/master/pkg/apis/banzaicloud/v1alpha1/types.go#L18-L32
 	// sher-end
 }
 
