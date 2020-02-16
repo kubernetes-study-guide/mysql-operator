@@ -387,6 +387,29 @@ spec:
     mysql_password: wpPassword
     mysql_root_password: wpAdminPassword
     mysql_user: wpuser
+
+
+$ kubectl describe mysql my-mysql-db
+Name:         my-mysql-db
+Namespace:    default
+Labels:       <none>
+Annotations:  kubectl.kubernetes.io/last-applied-configuration:
+                {"apiVersion":"cache.codingbee.net/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"my-mysql-db","namespace":"default"},"spec...
+API Version:  cache.codingbee.net/v1alpha1
+Kind:         MySQL
+Metadata:
+  Creation Timestamp:  2020-02-16T10:33:19Z
+  Generation:          1
+  Resource Version:    196765
+  Self Link:           /apis/cache.codingbee.net/v1alpha1/namespaces/default/mysqls/my-mysql-db
+  UID:                 b308c6e0-cede-482b-bf06-083dc50523be
+Spec:
+  Environment:
+    mysql_database:       wordpressDB
+    mysql_password:       wpPassword
+    mysql_root_password:  wpAdminPassword
+    mysql_user:           wpuser
+Events:                   <none>
 ```
 
 
