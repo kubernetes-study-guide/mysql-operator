@@ -376,6 +376,45 @@ I did the same thing for the NewServiceForCR function too - https://github.com/S
 
 
 
+
+
+
+
+## Making data persistent. 
+
+If you're mysql pod dies, then all the data stored in it's database get's lost too. To prevent that from happening, oyu need to make use of Persitent Volumes. You can create it directly using a PV object. But it's better to create it indirectly using a PVC instead. That's because PVs created from a PVC can be retained even after the CR itself is deleted. 
+
+To achieve this, we need to take the following steps:
+
+1. Need update operator to create new pvc object. 
+  1. Update types file to include new settings needed in order to create PVC.
+  2. update crd file - `operator-sdk generate k8s` and `operator-sdk generate crds`
+  3. update example cr file. 
+  4. add new watch for pvc
+  5. Add logic for pvc in reconcile function
+  6. create new function for defining the pvc yaml definition
+2. Create storage class, in order to retain PV beyond the lifetime of the CR (covered later)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # setup up status info for our CR. 
 
 At the moment `kubectl get mysql` only has 2 columns, name and age. We want to add more. 
