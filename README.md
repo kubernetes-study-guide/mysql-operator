@@ -341,6 +341,24 @@ You should also try deleting your pods and services and it will get recreated by
 
 
 
+## Organise our code into go packages
+
+Our mysql_operator.go file is getting quite big. We can break down this file by organise the code into separate files. I'll do this by [creating packages](https://github.com/Sher-Chowdhury/gsg_child_packages). To do this I'll move the NewPodForCR function intos it's own .go file - https://github.com/Sher-Chowdhury/mysql-operator/commit/698670a8de4ebbd24a4bbb168034de6f5fbf3f96
+
+Note:
+- A package's public function needs to start with a capital letter. 
+- sometimes vs code complains about false errors, in which case try restarting vscode. 
+- I needed to create the packages folder in the same directory as the mysql_controller.go. Although I think this is unnecessary.
+- vscode seems to updated the import block on it's own. And listed the packages in alphabetical order
+
+
+
+I did the same thing for the NewServiceForCR function too - https://github.com/Sher-Chowdhury/mysql-operator/commit/179d5044604c986296238d3f8eeb540cb1de078a
+
+
+
+
+
 ## organise our code into seperate files. 
 
 
