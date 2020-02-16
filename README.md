@@ -119,7 +119,15 @@ Now deploy the crd (you can also deploy the example cr too if you want too):
 kubectl apply -f deploy/crds/cache.codingbee.net_mysqls_crd.yaml
 ```
 
-The above is bit like creating a new table for storing mysql cr data in etcd. 
+The above is bit like creating a new table for storing mysql cr data in etcd. Let's check out etcd now has this crd:
+
+```
+$ kubectl get customresourcedefinitions                      
+NAME                         CREATED AT
+mysqls.cache.codingbee.net   2020-02-12T22:30:00Z
+```
+
+
 
 After that you can list your mysql instances:
 
