@@ -1,4 +1,23 @@
 # mysql-operator
+
+## Overview
+
+This guide is broken into 2 stages. 
+
+1. build a mysql operator
+2. build a wordpress operator
+
+## The approach
+
+We are going to start with a simple hello world example. And incrementally modify it into a fully functional mysql operator. 
+
+
+We will start with implementing quick+dirty techniques, but then gradually improve and build on that to incorporate best practice and achieve level 1 maturity. 
+
+
+
+
+
 mysql kubernetes operator built using the operator-sdk
 
 ```
