@@ -389,7 +389,8 @@ To achieve this, we need to take the following steps:
 
 1. Need update operator to create new pvc object. 
   1. Update types file to include new settings needed in order to create PVC - 
-  2. update crd file - `operator-sdk generate k8s` and `operator-sdk generate crds`
+    1. Perform - `operator-sdk generate k8s`
+    2. Updated crd - `operator-sdk generate crds`
   3. update example cr file. 
   4. add new watch for pvc
   5. Add logic for pvc in reconcile function
