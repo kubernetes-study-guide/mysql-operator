@@ -15,6 +15,12 @@ type EnvironmentVariables struct {
 	MysqlPassword     string `json:"mysql_password"`
 }
 
+// VolumeSettings - info needed to create PVC.
+type VolumeSettings struct {
+	VolumeSize   string `json:"volume_size"`
+	StorageClass string `json:"storage_class"`
+}
+
 // sher-end
 
 // MySQLSpec defines the desired state of MySQL
@@ -26,6 +32,8 @@ type MySQLSpec struct {
 	Environment EnvironmentVariables `json:"environment"`
 	// here's a more sophisticated example:
 	// https://github.com/Sher-Chowdhury/prometheus-jmx-exporter-operator/blob/master/pkg/apis/banzaicloud/v1alpha1/types.go#L18-L32
+
+	Volume VolumeSettings `json:"volume"`
 	// sher-end
 }
 
