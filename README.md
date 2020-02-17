@@ -211,7 +211,7 @@ First build an image that has your controller baked in:
 export account=sher_chowdhury
 export image_name=mysql-operator
 export tag_version=v0.0.1
-docker login quay.io
+docker login --username ${account} quay.io
 operator-sdk build quay.io/${account}/${image_name}:${tag_version}
 docker push quay.io/${account}/${image_name}:${tag_version}
 sed -i "" "s|REPLACE_IMAGE|quay.io/${account}/${image_name}:${tag_version}|g" deploy/operator.yaml
