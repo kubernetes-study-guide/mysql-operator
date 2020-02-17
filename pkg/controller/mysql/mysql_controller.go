@@ -5,6 +5,7 @@ import (
 
 	cachev1alpha1 "github.com/Sher-Chowdhury/mysql-operator/pkg/apis/cache/v1alpha1"
 	pods "github.com/Sher-Chowdhury/mysql-operator/pkg/controller/mysql/resources/pods"
+	pvcs "github.com/Sher-Chowdhury/mysql-operator/pkg/controller/mysql/resources/pvcs"
 	services "github.com/Sher-Chowdhury/mysql-operator/pkg/controller/mysql/resources/services"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -48,6 +49,16 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to primary resource MySQL
 	err = c.Watch(&source.Kind{Type: &cachev1alpha1.MySQL{}}, &handler.EnqueueRequestForObject{})
+	if err != nil {
+		return err
+	}
+
+	// TODO(user): Modify this to be the types you create that are owned by the primary resource
+	// Watch for changes to secondary resource Service and requeue the owner MySQL
+	err = c.Watch(&source.Kind{Type: &corev1.PersistentVolumeClaim{}}, &handler.EnqueueRequestForOwner{
+		IsController: true,
+		OwnerType:    &cachev1alpha1.MySQL{},
+	})
 	if err != nil {
 		return err
 	}
@@ -110,6 +121,34 @@ func (r *ReconcileMySQL) Reconcile(request reconcile.Request) (reconcile.Result,
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
+
+	// Define a new pvc object, this is a bit like writing a pvc yaml file. But not do kubectl apply yet.
+	pvc := pvcs.NewPvcForCR(instance)
+
+	// Set MySQL instance as the owner and controller
+	if err := controllerutil.SetControllerReference(instance, pvc, r.scheme); err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// Check if this PVC already exists
+	foundpvc := &corev1.PersistentVolumeClaim{}
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pvc.Name, Namespace: pvc.Namespace}, foundpvc)
+	if err != nil && errors.IsNotFound(err) {
+		reqLogger.Info("Creating a new PVC", "PVC.Namespace", pvc.Namespace, "PVC.Name", pvc.Name)
+		// This create line is essentially doing a kubectl create command.
+		err = r.client.Create(context.TODO(), pvc)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+
+		// PVC created successfully - don't requeue
+		return reconcile.Result{}, nil
+	} else if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// PVC already exists - don't requeue
+	reqLogger.Info("Skip reconcile: PVC already exists", "PVC.Namespace", foundpvc.Namespace, "PVC.Name", foundpvc.Name)
 
 	// Define a new Pod object, this is a bit like writing a pod yaml file. But not do kubectl apply yet.
 	pod := pods.NewPodForCR(instance)

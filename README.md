@@ -394,8 +394,21 @@ To achieve this, we need to take the following steps:
   3. update example cr file - 
   4. add new watch for pvc
   5. Add logic for pvc in reconcile function
-  6. create new function for defining the pvc yaml definition
-2. Create storage class, in order to retain PV beyond the lifetime of the CR (covered later)
+  6. create new function for defining the pvc yaml definition. I've created this in the form of a package - 
+2. Ensure storage class with 'retain' option is enabled. This is in order to retain PV even if the PVC or the CR as a whole gets deleted- This storageclass is something that should get created at the of building the kubecluster itself. It's bad practice to create this as part of this mysql operator. The following can be used to create this sc in minikube:
+
+```
+kubectl apply -f deploy/minikube-storageclass.yaml
+```
+
+This ends up with:
+
+```
+$ kubectl get storageclasses -o wide                
+NAME                 PROVISIONER                RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+retained-volumes     k8s.io/minikube-hostpath   Retain          Immediate           false                  6m21s
+standard (default)   k8s.io/minikube-hostpath   Delete          Immediate           false                  65m
+```
 
 
 
