@@ -8,3 +8,6 @@ spec:
     mysql_password: wpPassword
     mysql_root_password: wpAdminPassword
     mysql_user: wpuser
+  volume:
+    storage_class: retained_volumes
+    volume_size: 1Gi
