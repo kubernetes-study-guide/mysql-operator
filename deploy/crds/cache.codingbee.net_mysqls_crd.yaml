@@ -52,8 +52,20 @@ spec:
               - mysql_root_password
               - mysql_user
               type: object
+            volume:
+              description: VolumeSettings - info needed to create PVC.
+              properties:
+                storage_class:
+                  type: string
+                volume_size:
+                  type: string
+              required:
+              - storage_class
+              - volume_size
+              type: object
           required:
           - environment
+          - volume
           type: object
         status:
           description: MySQLStatus defines the observed state of MySQL
