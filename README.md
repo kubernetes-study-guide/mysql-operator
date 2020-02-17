@@ -257,12 +257,13 @@ operator-sdk run --local --namespace=default
 ```
 
 
-
+## Create CR
 
 
 After that we can deploy our example cr:
 
 ```
+kubectl apply -f deploy/crds/cache.codingbee.net_mysqls_crd.yaml
 kubectl apply -f deploy/crds/my-mysql-db-cr.yaml
 ```
 
@@ -387,13 +388,15 @@ If you're mysql pod dies, then all the data stored in it's database get's lost t
 To achieve this, we need to take the following steps:
 
 1. Need update operator to create new pvc object. 
-  1. Update types file to include new settings needed in order to create PVC.
+  1. Update types file to include new settings needed in order to create PVC - 
   2. update crd file - `operator-sdk generate k8s` and `operator-sdk generate crds`
   3. update example cr file. 
   4. add new watch for pvc
   5. Add logic for pvc in reconcile function
   6. create new function for defining the pvc yaml definition
 2. Create storage class, in order to retain PV beyond the lifetime of the CR (covered later)
+
+
 
 
 
