@@ -410,6 +410,10 @@ retained-volumes     k8s.io/minikube-hostpath   Retain          Immediate       
 standard (default)   k8s.io/minikube-hostpath   Delete          Immediate           false                  65m
 ```
 
+Next you need to create a PV from this new sc. Since unfortunately a PVC can't rebind to a PV it earlier created. So need to use the volumeName+claimref technique - https://stackoverflow.com/a/55443675
+
+With this in place, it means you can delete the cr and recreate it again, and it will attach to the same PV. 
+
 
 
 
