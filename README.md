@@ -349,23 +349,87 @@ kubectl replace -f deploy/crds/my-mysql-db-cr.yaml
 Now we can test this new mysqldb service by running:
 
 ```
-$ kubectl run -it --image=mysql:latest client -- bash
+kubectl run -it --rm --image=mysql:latest client -- bash
 export MYSQL_ROOT_PASSWORD=wpAdminPassword
 mysql -u root -h my-mysql-db-service -p$MYSQL_ROOT_PASSWORD
+```
+
+This gives us the mysql cmd prompt:
+
+```
+mysql>
 ```
 
 
 Then in the msyql prompt, run:
 
 ```
-show databases;
+SHOW databases;
+USE wordpressDB;
+SHOW TABLES;
+CREATE TABLE customers (userID INT, userFirstName char(25), userLastName char(25), userEmailAddress char(50));
+SHOW TABLES;
+DESCRIBE customers;
+INSERT INTO customers (userID,userFirstName,userLastName,userEmailAddress) VALUES (1,"Peter","Parker","spiderman.gmail.com");
+INSERT INTO customers (userID,userFirstName,userLastName,userEmailAddress) VALUES (2,"Tony","Stark","ironman.gmail.com");
+INSERT INTO customers (userID,userFirstName,userLastName,userEmailAddress) VALUES (3,"Steve","Rogers","captain_america.gmail.com");
+INSERT INTO customers (userID,userFirstName,userLastName,userEmailAddress) VALUES (4,"Bruce","Banner","the_hull.gmail.com");
+SELECT * FROM customers;
+exit
 ```
 
-This will end up listing the "wordpressDB" database. 
+Next exit out. 
+
+Then delete the pod:
 
 
-You should also try deleting your pods and services and it will get recreated by the operator.
+```
+$ kubectl delete pod my-mysql-db-pod
+```
 
+A new pod comes up in it's place. Let's go back take a look inside it:
+
+```
+kubectl run -it --rm --image=mysql:latest client -- bash
+export MYSQL_ROOT_PASSWORD=wpAdminPassword
+mysql -u root -h my-mysql-db-service -p$MYSQL_ROOT_PASSWORD
+```
+
+Then on the mysql prompt, we get
+
+```
+
+SHOW databases;
+USE wordpressDB;
+SHOW TABLES;
+```
+
+This outputs:
+
+```
+mysql> SHOW databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
+| wordpressDB        |
++--------------------+
+5 rows in set (0.01 sec)
+
+mysql> USE wordpressDB;
+Database changed
+mysql> SHOW TABLES;
+Empty set (0.00 sec)
+
+mysql>
+```
+
+
+
+To make this persistent in case the pod fails, use pvc. 
 
 
 
@@ -392,7 +456,26 @@ I did the same thing for the NewServiceForCR function too - https://github.com/S
 
 ## Making data persistent. 
 
-If you're mysql pod dies, then all the data stored in it's database get's lost too. To prevent that from happening, oyu need to make use of Persitent Volumes. You can create it directly using a PV object. But it's better to create it indirectly using a PVC instead. That's because PVs created from a PVC can be retained even after the CR itself is deleted. 
+If you're mysql pod dies, then all the data stored in it's database get's lost too. Let's demo this:
+
+```
+$ kubectl apply -f deploy/crds/my-mysql-db-cr.yaml
+```
+
+Now let's populate the the pod db:
+
+```
+$ kubectl run -it --rm --image=mysql:latest client -- bash
+kubectl exec -it <mysql-pod-name> -- bash
+mysql -u root -h localhost -p$MYSQL_ROOT_PASSWORD
+```
+
+
+
+
+
+
+To prevent that from happening, oyu need to make use of Persitent Volumes. You can create it directly using a PV object. But it's better to create it indirectly using a PVC instead. That's because PVs created from a PVC can be retained and gets reattached to a new replacement pod. . 
 
 To achieve this, we need to take the following steps:
 
