@@ -12,6 +12,29 @@ func NewPodForCR(cr *cachev1alpha1.MySQL) *corev1.Pod {
 		"app": cr.Name,
 	}
 	mysqlEnvVars := cr.Spec.Environment
+
+	mysqlPvcVolumeSource := &corev1.PersistentVolumeClaimVolumeSource{
+		ClaimName: cr.Name + "-pvc",
+	}
+
+	mysqlVolumeSource := corev1.VolumeSource{
+		PersistentVolumeClaim: mysqlPvcVolumeSource,
+	}
+
+	mysqlVolumes := []corev1.Volume{
+		{
+			Name:         "mysql-pvc-provisioned-volume",
+			VolumeSource: mysqlVolumeSource,
+		},
+	}
+
+	mysqlVolumeMounts := []corev1.VolumeMount{
+		{
+			Name:      "mysql-pvc-provisioned-volume",
+			MountPath: "/var/lib/mysql",
+		},
+	}
+
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name + "-pod",
@@ -19,6 +42,7 @@ func NewPodForCR(cr *cachev1alpha1.MySQL) *corev1.Pod {
 			Labels:    labels,
 		},
 		Spec: corev1.PodSpec{
+			Volumes: mysqlVolumes,
 			Containers: []corev1.Container{
 				{
 					Name:  "mysqldb",
@@ -42,6 +66,7 @@ func NewPodForCR(cr *cachev1alpha1.MySQL) *corev1.Pod {
 							Value: mysqlEnvVars.MysqlPassword,
 						},
 					},
+					VolumeMounts: mysqlVolumeMounts,
 				},
 			},
 		},
