@@ -751,9 +751,23 @@ standard (default)   k8s.io/minikube-hostpath   Delete          Immediate       
 Next you need to create a PV from this new sc. Since unfortunately a PVC can't rebind to a PV it earlier created. So need to use the volumeName+claimref technique - https://stackoverflow.com/a/55443675
 
 
-However it's quite rare to want to have a cr
+Another use case, is that might not care what happens to your PV once the cr gets deleted. In that scenario it becomes an unnecessary burden to make mandatory. 
 
+E.g. let's make a copy of our cr which include the sc setting:
 
+```
+$ cp deploy/crds/my-mysql-db-cr.yaml deploy/crds/my-mysql-db-cr-with-retained-pv.yaml 
+```
+
+Then remove the sc setting - 
+
+E.g. if remove the storageclass, and try to cerate cr., I get:
+
+```
+$ kubectl apply -f deploy/crds/my-mysql-db-cr.yaml
+
+The MySQL "my-mysql-db" is invalid: spec.volume.storage_class: Required value
+```
 
 
 
