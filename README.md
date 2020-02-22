@@ -789,6 +789,8 @@ The MySQL "my-mysql-db" is invalid: spec.volume.storage_class: Required value
 
 
 
+
+
 # setup up status info for our CR. 
 
 At the moment `kubectl get mysql` only has 2 columns, name and age. We want to add more. 
