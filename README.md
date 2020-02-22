@@ -759,9 +759,9 @@ E.g. let's make a copy of our cr which include the sc setting:
 $ cp deploy/crds/my-mysql-db-cr.yaml deploy/crds/my-mysql-db-cr-with-retained-pv.yaml 
 ```
 
-Then remove the sc setting - 
+Then remove the sc setting - https://github.com/Sher-Chowdhury/mysql-operator/commit/1dc5081c180e3a6b5f233c4b9ec24840244439c4
 
-E.g. if remove the storageclass, and try to cerate cr., I get:
+Now if try to create cr., I get:
 
 ```
 $ kubectl apply -f deploy/crds/my-mysql-db-cr.yaml
