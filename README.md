@@ -629,13 +629,40 @@ To prevent that from happening, we need to make use of Persitent Volumes. You ca
 To achieve this, we need to take the following steps:
 
 1. Update types 
-    1. file to include new settings needed in order to create PVC - 
+    1. update file to include new settings needed in order to create PVC - https://github.com/Sher-Chowdhury/mysql-operator/blob/e3f4c3bb6b3a0ca42e49197d4672fe86da0d93b9/pkg/apis/cache/v1alpha1/mysql_types.go#L36 and https://github.com/Sher-Chowdhury/mysql-operator/blob/e3f4c3bb6b3a0ca42e49197d4672fe86da0d93b9/pkg/apis/cache/v1alpha1/mysql_types.go#L19-L22
     1. Perform - `operator-sdk generate k8s`
     2. Updated crd - `operator-sdk generate crds`
-2. update example cr file - 
-3. add new watch for pvc
-4. Add logic for pvc in reconcile function
-5. create new function for defining the pvc yaml definition. I've created this in the form of a package - 
+2. update example cr file - https://github.com/Sher-Chowdhury/mysql-operator/blob/e3f4c3bb6b3a0ca42e49197d4672fe86da0d93b9/deploy/crds/my-mysql-db-cr.yaml#L11-L13
+3. add new watch for pvc - https://github.com/Sher-Chowdhury/mysql-operator/blob/e3f4c3bb6b3a0ca42e49197d4672fe86da0d93b9/pkg/controller/mysql/mysql_controller.go#L56-L64
+4. Add logic for pvc in reconcile function - https://github.com/Sher-Chowdhury/mysql-operator/blob/e3f4c3bb6b3a0ca42e49197d4672fe86da0d93b9/pkg/controller/mysql/mysql_controller.go#L125-L151 This calls the NewPvcForCR function we created in the next step. 
+5. create new function for defining the pvc yaml definition. I've created this in the form of a package - https://github.com/Sher-Chowdhury/mysql-operator/blob/e3f4c3bb6b3a0ca42e49197d4672fe86da0d93b9/pkg/controller/mysql/resources/pvcs/mysql-pvc.go
+
+
+
+Ok this created the pvc, which in turn creates the pv:
+
+```
+$ kubectl get pvc
+NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS       AGE
+my-mysql-db-pvc   Bound    pvc-c34de3be-3d8b-447a-a366-8ee6d115381d   1Gi        RWO            retained-volumes   18m
+
+$ kubectl get pod
+NAME                             READY   STATUS    RESTARTS   AGE
+my-mysql-db-pod                  1/1     Running   0          18m
+mysql-operator-74676f9d4-js2k8   1/1     Running   0          46m
+
+```
+
+However we haven't made added code in order for the pv to make use of this PV. Let's do that now
+
+
+
+
+
+
+
+
+
 
 
 
