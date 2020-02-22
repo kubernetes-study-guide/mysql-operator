@@ -489,7 +489,7 @@ mysql> SHOW DATABASES;
 +--------------------+
 5 rows in set (0.00 sec)
 
-mysql> USE wordpressDB
+mysql> USE wordpressDB;
 Database changed
 mysql> SHOW TABLES;
 Empty set (0.00 sec)
@@ -638,35 +638,100 @@ To achieve this, we need to take the following steps:
 5. create new function for defining the pvc yaml definition. I've created this in the form of a package - https://github.com/Sher-Chowdhury/mysql-operator/blob/e3f4c3bb6b3a0ca42e49197d4672fe86da0d93b9/pkg/controller/mysql/resources/pvcs/mysql-pvc.go
 
 
+notes: Here we specified the storage class setting. 
+https://github.com/Sher-Chowdhury/mysql-operator/blob/e3f4c3bb6b3a0ca42e49197d4672fe86da0d93b9/pkg/apis/cache/v1alpha1/mysql_types.go#L21
+That is not a mandatory field but we have added it in for now because we'll use it as part of a demo later on. 
+
+
+
+After that, you can retest this by running:
+
+
+```
+$ kubectl replace -f deploy/crds/my-mysql-db-cr.yaml --force
+```
 
 Ok this created the pvc, which in turn creates the pv:
 
 ```
 $ kubectl get pvc
-NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS       AGE
-my-mysql-db-pvc   Bound    pvc-c34de3be-3d8b-447a-a366-8ee6d115381d   1Gi        RWO            retained-volumes   18m
 
-$ kubectl get pod
-NAME                             READY   STATUS    RESTARTS   AGE
-my-mysql-db-pod                  1/1     Running   0          18m
-mysql-operator-74676f9d4-js2k8   1/1     Running   0          46m
-
+$ kubectl get pv
 ```
 
-However we haven't made added code in order for the pv to make use of this PV. Let's do that now
+
+However we haven't made added code in order for the pod to make use of this PV. Let's do that now. 
+
+
+Tip, before writing this function, it's a good idea to write out the yaml equivalent and then test it out. e.g. something like:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: my-mysql-db
+  name: my-mysql-db-pod
+spec:
+  containers:
+  - env:
+    - name: MYSQL_ROOT_PASSWORD
+      value: wpAdminPassword
+    - name: MYSQL_DATABASE
+      value: wordpressDB
+    - name: MYSQL_USER
+      value: wpuser
+    - name: MYSQL_PASSWORD
+      value: wpPassword
+    image: docker.io/mysql:latest
+    imagePullPolicy: Always
+    name: mysqldb
+    volumeMounts:                                ##  New section nested unter pod.spec.containers block
+    - mountPath: /var/lib/mysql                  ##
+      name: mysql-pvc-provisioned-volume         ##
+  volumes:                                    ## New section neseted under pod.spec block
+  - name: mysql-pvc-provisioned-volume        ##
+    persistentVolumeClaim:                    ##
+      claimName: my-mysql-db-pvc              ##
+```
+
+You should then test out this sample code to confirm it's working. After confirming it works, you can then codify it into golang code. 
+
+
+This sample will also help you visualise what your yaml function would look like. For example, we have to write code to generate to different parts `pod.spec.containers.volumeMounts` and `pod.spec.volumes` and they are both linked together by their respective `name` settings. 
+
+I used `/var/lib/mysql` as the mountpath as advised by the https://hub.docker.com/_/mysql
+
+
+Here how this looks like - https://github.com/Sher-Chowdhury/mysql-operator/commit/2e8e78b2ea9e57306ad554914f1f4d2a44ddb5a8
+
+
+The best way to understan how to write this is to break it into 2 parts. so first write out the code to generate `pod.spec block` then repeat the approach for the `pod.spec.containers` block. 
+
+
+ Then see what you need and  list them out. This list outlines that we need 'a' which depends 'b' which depends on 'c'. once you have this list, reverse the order of that list and then work down that list. 
+
+
+Then  retest. You should find the data persists even when the pod dies.  
+
+
+However the data does get deleted if you delete the whole cr itself:
 
 
 
+```
+$ kubectl replace -f deploy/crds/my-mysql-db-cr.yaml --force
+```
 
+That's because This ends up deleting the PV as a whole. If you want to keep the PV, then that's possible by specifying a storageclass with a reclaimpolicy set to 'retain'.
 
+```
+$ kubectl get sc
+NAME                 PROVISIONER                RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+standard (default)   k8s.io/minikube-hostpath   Delete          Immediate           false                  6h27m
+```
 
-
-
-
-
-
-
-2. Ensure storage class with 'retain' option is enabled. This is in order to retain PV even if the PVC or the CR as a whole gets deleted- This storageclass is something that should get created at the of building the kubecluster itself. It's bad practice to create this as part of this mysql operator. The following can be used to create this sc in minikube:
+Ensure storage class with 'retain' option is enabled. This is in order to retain PV even if the PVC or the CR as a whole gets deleted- This storageclass is something that should get created at the of building the kubecluster itself. It's bad practice to create this as part of this mysql operator. The following can be used to create this sc in minikube:
 
 ```
 kubectl apply -f deploy/minikube-storageclass.yaml
@@ -681,9 +746,12 @@ retained-volumes     k8s.io/minikube-hostpath   Retain          Immediate       
 standard (default)   k8s.io/minikube-hostpath   Delete          Immediate           false                  65m
 ```
 
+
+
 Next you need to create a PV from this new sc. Since unfortunately a PVC can't rebind to a PV it earlier created. So need to use the volumeName+claimref technique - https://stackoverflow.com/a/55443675
 
-With this in place, it means you can delete the cr and recreate it again, and it will attach to the same PV. 
+
+However it's quite rare to want to have a cr
 
 
 
