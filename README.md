@@ -459,34 +459,186 @@ I did the same thing for the NewServiceForCR function too - https://github.com/S
 If you're mysql pod dies, then all the data stored in it's database get's lost too. Let's demo this:
 
 ```
-$ kubectl apply -f deploy/crds/my-mysql-db-cr.yaml
+kubectl apply -f deploy/crds/my-mysql-db-cr.yaml
 ```
 
-Now let's populate the the pod db:
+Let's open a test pod:
 
 ```
-$ kubectl run -it --rm --image=mysql:latest client -- bash
-kubectl exec -it <mysql-pod-name> -- bash
+kubectl exec -it my-mysql-db-pod -- bash
+```
+
+Then start a sql session:
+
+```
 mysql -u root -h localhost -p$MYSQL_ROOT_PASSWORD
 ```
 
+And see what tables are in our database:
+
+```
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
+| wordpressDB        |
++--------------------+
+5 rows in set (0.00 sec)
+
+mysql> USE wordpressDB
+Database changed
+mysql> SHOW TABLES;
+Empty set (0.00 sec)
+
+```
+
+
+Now let's create a table and put some dummy data inside it:
+
+
+```
+CREATE TABLE customers (
+  userID INT, 
+  userFirstName char(25), 
+  userLastName char(25), 
+  userEmailAddress char(50)
+);
+```
+
+Let's confirm that table exists:
+
+
+```
+mysql> SHOW TABLES;
++-----------------------+
+| Tables_in_wordpressDB |
++-----------------------+
+| customers             |
++-----------------------+
+1 row in set (0.01 sec)
+```
+
+Which at the moment doesn't contain any entries:
+
+```
+mysql> SELECT * FROM customers;
+Empty set (0.00 sec)
+
+mysql> 
+```
+
+
+Now lets populatee this table with some data:
+
+```
+INSERT INTO customers (userID,userFirstName,userLastName,userEmailAddress) VALUES (1,"Peter","Parker","spiderman.gmail.com");
+INSERT INTO customers (userID,userFirstName,userLastName,userEmailAddress) VALUES (2,"Tony","Stark","ironman.gmail.com");
+INSERT INTO customers (userID,userFirstName,userLastName,userEmailAddress) VALUES (3,"Steve","Rogers","captain_america.gmail.com");
+INSERT INTO customers (userID,userFirstName,userLastName,userEmailAddress) VALUES (4,"Bruce","Banner","the_hull.gmail.com");
+```
+
+This results in:
+
+```
+mysql> SELECT * FROM customers;
++--------+---------------+--------------+---------------------------+
+| userID | userFirstName | userLastName | userEmailAddress          |
++--------+---------------+--------------+---------------------------+
+|      1 | Peter         | Parker       | spiderman.gmail.com       |
+|      2 | Tony          | Stark        | ironman.gmail.com         |
+|      3 | Steve         | Rogers       | captain_america.gmail.com |
+|      4 | Bruce         | Banner       | the_hull.gmail.com        |
++--------+---------------+--------------+---------------------------+
+4 rows in set (0.00 sec)
+
+```
+
+Now if we exit out of this pod, delete it then go into the newly provisioned pod:
+
+```
+mysql> exit
+Bye
+root@my-mysql-db-pod:/# exit
+exit 
+
+$ kubectl get pods
+NAME                             READY   STATUS    RESTARTS   AGE
+my-mysql-db-pod                  1/1     Running   0          18m
+mysql-operator-74676f9d4-js2k8   1/1     Running   0          18m
+$ kubectl delete pods my-mysql-db-pod 
+pod "my-mysql-db-pod" deleted
+
+$ kubectl get pods                   
+NAME                             READY   STATUS    RESTARTS   AGE
+my-mysql-db-pod                  1/1     Running   0          44s
+mysql-operator-74676f9d4-js2k8   1/1     Running   0          20m
+
+
+$ kubectl exec -it my-mysql-db-pod -- bash
+
+root@my-mysql-db-pod:/# mysql -u root -h localhost -p$MYSQL_ROOT_PASSWORD
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.19 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
+| wordpressDB        |
++--------------------+
+5 rows in set (0.00 sec)
+
+mysql> USE wordpressDB
+Database changed
+mysql> SHOW TABLES;
+Empty set (0.00 sec)
+
+mysql> 
+```
+
+As you can see, our table and it's data has been wiped out. 
 
 
 
 
 
-To prevent that from happening, oyu need to make use of Persitent Volumes. You can create it directly using a PV object. But it's better to create it indirectly using a PVC instead. That's because PVs created from a PVC can be retained and gets reattached to a new replacement pod. . 
+To prevent that from happening, we need to make use of Persitent Volumes. You can create it directly using a PV object. But it's better to create it indirectly using a PVC instead. That's because PVs created from a PVC can be retained even if you delete your custom resource, we'll explain how thats done later. 
+
+
+
+
 
 To achieve this, we need to take the following steps:
 
-1. Need update operator to create new pvc object. 
-  1. Update types file to include new settings needed in order to create PVC - 
+1. Update types 
+    1. file to include new settings needed in order to create PVC - 
     1. Perform - `operator-sdk generate k8s`
     2. Updated crd - `operator-sdk generate crds`
-  3. update example cr file - 
-  4. add new watch for pvc
-  5. Add logic for pvc in reconcile function
-  6. create new function for defining the pvc yaml definition. I've created this in the form of a package - 
+2. update example cr file - 
+3. add new watch for pvc
+4. Add logic for pvc in reconcile function
+5. create new function for defining the pvc yaml definition. I've created this in the form of a package - 
+
+
+
 2. Ensure storage class with 'retain' option is enabled. This is in order to retain PV even if the PVC or the CR as a whole gets deleted- This storageclass is something that should get created at the of building the kubecluster itself. It's bad practice to create this as part of this mysql operator. The following can be used to create this sc in minikube:
 
 ```
