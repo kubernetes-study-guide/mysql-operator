@@ -1,7 +1,7 @@
 apiVersion: cache.codingbee.net/v1alpha1
 kind: MySQL
 metadata:
-  name: mydb
+  name: mydb-pod
 spec:
   environment:
     mysql_database: wordpressDB
@@ -9,4 +9,4 @@ spec:
     mysql_root_password: wpAdminPassword
     mysql_user: wpuser
   volume:
-    volume_size: 1Gi
+    volume_size: 200Mi

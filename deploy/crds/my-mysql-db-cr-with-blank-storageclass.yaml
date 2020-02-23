@@ -10,4 +10,4 @@ spec:
     mysql_user: wpuser
   volume:
     storage_class:
-    volume_size: 1Gi
+    volume_size: 200Mi
