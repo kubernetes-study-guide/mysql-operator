@@ -765,23 +765,106 @@ Next I create the pvcSpec. That starts with a blank struct, which I then gradual
 
 This ends up replacing the existing logic - https://github.com/Sher-Chowdhury/mysql-operator/commit/e08e86ce2956d16010025f1e1cebe9d46951c97a#diff-44d953b0b10edde67687c5268139cb2cL25-L35
 
-```
-$ cp deploy/crds/my-mysql-db-cr.yaml deploy/crds/my-mysql-db-cr-with-retained-pv.yaml 
-```
 
-Then remove the sc setting - https://github.com/Sher-Chowdhury/mysql-operator/commit/1dc5081c180e3a6b5f233c4b9ec24840244439c4
 
-Now if try to create cr., I get:
+Now you both of the new cr's should work. 
+
 
 ```
 $ kubectl apply -f deploy/crds/my-mysql-db-cr.yaml
+mysql.cache.codingbee.net/mydb created
 
-The MySQL "my-mysql-db" is invalid: spec.volume.storage_class: Required value
+$ kubectl apply -f deploy/crds/my-mysql-db-cr-with-set-storageclass.yaml
+mysql.cache.codingbee.net/mydb-with-set-sc created
+
+$ kubectl get pods
+NAME                   READY   STATUS    RESTARTS   AGE
+mydb-pod               1/1     Running   0          36s
+mydb-with-set-sc-pod   1/1     Running   0          18s
+
+$ kubectl get pvc
+NAME                   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS       AGE
+mydb-pvc               Bound    pvc-fc8c94fb-f918-443c-932c-3a5deeb22ff1   1Gi        RWO            standard           48s
+mydb-with-set-sc-pvc   Bound    pvc-039a38c4-f48b-4f20-b439-0d1901740d64   1Gi        RWO            retained-volumes   30s
 ```
 
 
 
 
+There is a third scenaro which specifies storageclass but is left blank. e.g.:
+
+```
+$ cat tmp-pvc.yaml
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-with-blank-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName:
+
+$ kubectl apply -f tmp-pvc.yaml
+persistentvolumeclaim/pvc-with-blank-storage created
+
+$ kubectl get pvc pvc-with-blank-storage
+NAME                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc-with-blank-storage   Bound    pvc-f00fd8cc-b6d3-49b7-adf8-b29a3ce951c7   1Gi        RWO            standard       10s
+
+$ kubectl get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                            STORAGECLASS       REASON   AGE
+pvc-f00fd8cc-b6d3-49b7-adf8-b29a3ce951c7   1Gi        RWO            Delete           Bound    default/pvc-with-blank-storage   standard                    30s
+
+```
+
+I created a similar cr to replicate this:
+
+```
+$ cat deploy/crds/my-mysql-db-cr-with-blank-storageclass.yaml
+apiVersion: cache.codingbee.net/v1alpha1
+kind: MySQL
+metadata:
+  name: mydb-with-blank-sc
+spec:
+  environment:
+    mysql_database: wordpressDB
+    mysql_password: wpPassword
+    mysql_root_password: wpAdminPassword
+    mysql_user: wpuser
+  volume:
+    storage_class:
+    volume_size: 1Gi
+```
+
+However that didn't work:
+
+```
+$ kubectl apply -f deploy/crds/my-mysql-db-cr-with-blank-storageclass.yaml
+The MySQL "mydb-with-blank-sc" is invalid: spec.volume.storage_class: Invalid value: "null": spec.volume.storage_class in body must be of type string: "null"
+```
+
+
+
+```
+$ cat deploy/crds/my-mysql-db-cr-with-blank-storageclass.yaml
+apiVersion: cache.codingbee.net/v1alpha1
+kind: MySQL
+metadata:
+  name: mydb-with-blank-sc
+spec:
+  environment:
+    mysql_database: wordpressDB
+    mysql_password: wpPassword
+    mysql_root_password: wpAdminPassword
+    mysql_user: wpuser
+  volume:
+    storage_class:
+    volume_size: 1Gi
+```
 
 
 
