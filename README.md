@@ -752,7 +752,18 @@ Next you need to create a PV from this new sc. Since unfortunately a PVC can't r
 
 Another use case, is that might not care what happens to your PV once the cr gets deleted. In that scenario it becomes an unnecessary burden to make mandatory. 
 
-E.g. let's make a copy of our cr which include the sc setting:
+E.g. let's replace our existing cr defintions with these 2. I shortened the cr.names too to make things simpler. 
+- https://github.com/Sher-Chowdhury/mysql-operator/commit/e08e86ce2956d16010025f1e1cebe9d46951c97a#diff-0962a40d6cd398a5963b080e42cc727eL4
+- https://github.com/Sher-Chowdhury/mysql-operator/commit/e08e86ce2956d16010025f1e1cebe9d46951c97a#diff-05ae5677ad12ba673677c0fb353160b0L4
+
+
+Then I made StorageClass setting optional, by enabling the omitempty setting - https://github.com/Sher-Chowdhury/mysql-operator/commit/e08e86ce2956d16010025f1e1cebe9d46951c97a#diff-bbc388b9f979f725f3962a950d7b75b4L21
+
+After running the `operator-sdk generate k8s` command, the sc gets removed from the required list - https://github.com/Sher-Chowdhury/mysql-operator/commit/e08e86ce2956d16010025f1e1cebe9d46951c97a#diff-7fda698534788ca007b527fa28af6e3dL63
+
+Next I create the pvcSpec. That starts with a blank struct, which I then gradually populate with available settings - https://github.com/Sher-Chowdhury/mysql-operator/commit/e08e86ce2956d16010025f1e1cebe9d46951c97a#diff-44d953b0b10edde67687c5268139cb2cR17-R46
+
+This ends up replacing the existing logic - https://github.com/Sher-Chowdhury/mysql-operator/commit/e08e86ce2956d16010025f1e1cebe9d46951c97a#diff-44d953b0b10edde67687c5268139cb2cL25-L35
 
 ```
 $ cp deploy/crds/my-mysql-db-cr.yaml deploy/crds/my-mysql-db-cr-with-retained-pv.yaml 
