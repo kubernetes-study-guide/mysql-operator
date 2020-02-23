@@ -14,7 +14,36 @@ func NewPvcForCR(cr *cachev1alpha1.MySQL) *corev1.PersistentVolumeClaim {
 	}
 
 	volumesize := cr.Spec.Volume.VolumeSize
-	storageclassname := cr.Spec.Volume.StorageClass
+
+	var pvcSpec corev1.PersistentVolumeClaimSpec
+	pvcSpec.AccessModes = []corev1.PersistentVolumeAccessMode{
+		corev1.ReadWriteOnce,
+	}
+	pvcSpec.Resources = corev1.ResourceRequirements{
+		Requests: corev1.ResourceList{
+			corev1.ResourceStorage: resource.MustParse(volumesize),
+		},
+	}
+
+	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxx Accessmodes xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	println(pvcSpec.AccessModes)
+	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+
+	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxx  StorageClassName xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	println(pvcSpec.StorageClassName)
+	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+
+	if cr.Spec.Volume.StorageClass != "" {
+		pvcSpec.StorageClassName = &cr.Spec.Volume.StorageClass
+	}
+
+	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxx Accessmodes - after xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	println(pvcSpec.AccessModes)
+	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+
+	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxx  StorageClassName - after xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	println(pvcSpec.StorageClassName)
+	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 	return &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
@@ -22,16 +51,6 @@ func NewPvcForCR(cr *cachev1alpha1.MySQL) *corev1.PersistentVolumeClaim {
 			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
-		Spec: corev1.PersistentVolumeClaimSpec{
-			AccessModes: []corev1.PersistentVolumeAccessMode{
-				corev1.ReadWriteOnce,
-			},
-			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					corev1.ResourceStorage: resource.MustParse(volumesize),
-				},
-			},
-			StorageClassName: &storageclassname,
-		},
+		Spec: pvcSpec,
 	}
 }

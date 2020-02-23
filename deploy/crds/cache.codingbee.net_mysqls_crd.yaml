@@ -60,7 +60,6 @@ spec:
                 volume_size:
                   type: string
               required:
-              - storage_class
               - volume_size
               type: object
           required:

@@ -718,7 +718,6 @@ Then  retest. You should find the data persists even when the pod dies.
 However the data does get deleted if you delete the whole cr itself:
 
 
-
 ```
 $ kubectl replace -f deploy/crds/my-mysql-db-cr.yaml --force
 ```
