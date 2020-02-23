@@ -754,7 +754,7 @@ standard (default)   k8s.io/minikube-hostpath   Delete          Immediate       
 Next you need to create a PV from this new sc. Since unfortunately a PVC can't rebind to a PV it earlier created. So need to use the volumeName+claimref technique - https://stackoverflow.com/a/55443675
 
 
-Another use case, is that might not care what happens to your PV once the cr gets deleted. In that scenario it becomes an unnecessary burden to make mandatory. 
+Another use case, is that might not care what happens to your PV once the cr gets deleted. In that scenario it becomes an unnecessary burden to make it mandatory to fill out this storageclass section and instead make it default to the default storage class instead. 
 
 E.g. let's replace our existing cr defintions with these 2. I shortened the cr.names too to make things simpler. 
 - https://github.com/Sher-Chowdhury/mysql-operator/commit/e08e86ce2956d16010025f1e1cebe9d46951c97a#diff-0962a40d6cd398a5963b080e42cc727eL4
@@ -771,7 +771,7 @@ This ends up replacing the existing logic - https://github.com/Sher-Chowdhury/my
 
 
 
-Now you both of the new cr's should work. 
+Now both of the new cr's should work. 
 
 
 ```
@@ -795,7 +795,7 @@ mydb-with-set-sc-pvc   Bound    pvc-039a38c4-f48b-4f20-b439-0d1901740d64   1Gi  
 
 
 
-There is a third scenaro which specifies storageclass but is left blank. e.g.:
+There is a third scenaro which specifies storageclass, but is left blank. e.g.:
 
 ```
 $ cat tmp-pvc.yaml
@@ -852,6 +852,14 @@ The MySQL "mydb-with-blank-sc" is invalid: spec.volume.storage_class: Invalid va
 ```
 
 This error message appears even when your operator pod isn't running. That means that problem is being reported by kubernetes itslef based on the crd spec. 
+
+Therefore I made the following change - https://github.com/Sher-Chowdhury/mysql-operator/commit/f458f4827bb2869255b25da5f6bf5e2c79680570
+
+
+I found out about `nullable` and `anyof` settings here - https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/#specifying-a-structural-schema
+
+
+
 
 
 
