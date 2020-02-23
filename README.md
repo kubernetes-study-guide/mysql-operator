@@ -868,6 +868,18 @@ So with this in place, all the following scenarios should now work:
 3. yaml with storage class set to empty string.  (should default to default sc)
 4. yaml with storage class set to specific name  (should use to specified sc)
 
+We have now nearly reached the Phase 1 of the Maturity Model - 
+
+https://docs.openshift.com/container-platform/4.3/operators/olm-what-operators-are.html#olm-maturity-model_olm-what-operators-are
+
+Things this outstanding to full reach phase 1. 
+
+- more configuration ability for mysql, e.g make use of config maps. 
+- better db login cred managment - using kubectl secrets. 
+- Implement bast practice - e.g. resource cpu/memory requests and limits. 
+- implement security best practice. 
+
+https://medium.com/@cloudark/introducing-kubernetes-operator-maturity-model-for-multi-operator-platforms-952d2e637a82
 
 
 
