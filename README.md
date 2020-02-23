@@ -260,10 +260,14 @@ $ kubectl delete -f deploy/
 
 This approach is better for developing your operator. Because it's faster.  
 
+
 ```
 export OPERATOR_NAME=mysql-operator
 operator-sdk run --local --namespace=default
 ```
+With this approach, you only need to deploy the crd before running the above command. 
+
+You don't need to create the role, serviceaccount, and rolebinding, since it's using your own privileges, since it's using your local kubeconfig details. 
 
 
 ## Create CR
@@ -847,24 +851,10 @@ $ kubectl apply -f deploy/crds/my-mysql-db-cr-with-blank-storageclass.yaml
 The MySQL "mydb-with-blank-sc" is invalid: spec.volume.storage_class: Invalid value: "null": spec.volume.storage_class in body must be of type string: "null"
 ```
 
+This error message appears even when your operator pod isn't running. That means that problem is being reported by kubernetes itslef based on the crd spec. 
 
 
-```
-$ cat deploy/crds/my-mysql-db-cr-with-blank-storageclass.yaml
-apiVersion: cache.codingbee.net/v1alpha1
-kind: MySQL
-metadata:
-  name: mydb-with-blank-sc
-spec:
-  environment:
-    mysql_database: wordpressDB
-    mysql_password: wpPassword
-    mysql_root_password: wpAdminPassword
-    mysql_user: wpuser
-  volume:
-    storage_class:
-    volume_size: 1Gi
-```
+
 
 
 
