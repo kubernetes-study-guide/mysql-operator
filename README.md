@@ -861,7 +861,12 @@ I found out about `nullable` and `anyof` settings here - https://kubernetes.io/d
 
 
 
+So with this in place, all the following scenarios should now work:
 
+1. yaml with no storageclass field at all. (should default to default sc)
+2. yaml with storage class, but left blank (should default to default sc)
+3. yaml with storage class set to empty string.  (should default to default sc)
+4. yaml with storage class set to specific name  (should use to specified sc)
 
 
 
