@@ -862,8 +862,13 @@ This error message appears even when your operator pod isn't running. That means
 Therefore I made the following change - https://github.com/Sher-Chowdhury/mysql-operator/commit/f458f4827bb2869255b25da5f6bf5e2c79680570
 
 
-I found out about `nullable` and `anyof` settings here - https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/#specifying-a-structural-schema
+I found out about `nullable` settings here - https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/#specifying-a-structural-schema
 
+To update our crd to enable this feature - we have to update our mysql_types.go file , and then ran `operator-sdk generate crds`-
+- https://github.com/Sher-Chowdhury/mysql-operator/commit/3dde8b8581b7ff40ed1d4e1f3da55fea43f04fb6
+I found what to set here:
+- https://book.kubebuilder.io/reference/markers/crd-validation.html?highlight=null#crd-validation
+- https://github.com/kubernetes-sigs/kubebuilder
 
 
 
