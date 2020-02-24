@@ -869,6 +869,7 @@ To update our crd to enable this feature - we have to update our mysql_types.go 
 I found what to set here:
 - https://book.kubebuilder.io/reference/markers/crd-validation.html?highlight=null#crd-validation
 - https://github.com/kubernetes-sigs/kubebuilder
+- https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 
 
 
