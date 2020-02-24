@@ -55,6 +55,7 @@ spec:
               description: VolumeSettings - info needed to create PVC.
               properties:
                 storage_class:
+                  nullable: true
                   type: string
                 volume_size:
                   type: string

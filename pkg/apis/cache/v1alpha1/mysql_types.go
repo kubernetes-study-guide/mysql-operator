@@ -17,7 +17,8 @@ type EnvironmentVariables struct {
 
 // VolumeSettings - info needed to create PVC.
 type VolumeSettings struct {
-	VolumeSize   string `json:"volume_size"`
+	VolumeSize string `json:"volume_size"`
+	// +nullable
 	StorageClass string `json:"storage_class,omitempty"`
 }
 
