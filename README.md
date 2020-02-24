@@ -87,6 +87,8 @@ spec:
     storage: true
 ```
 
+NOTE: You must never make changes to the crd file directly. Intead you should edit it by first editing the mysql_types.go file and then run the `openshift generate k8s` and `openshift generate crds` commands. 
+
 and the sample custom resource (cr):
 
 ```
@@ -101,6 +103,10 @@ spec:
 ```
 
 Added custom settings to pkg/apis/cache/v1alpha1/mysql_types.go - https://github.com/Sher-Chowdhury/mysql-operator/commit/a9ae8d85f8ddda4e3c6d7b3713f1dee03b5fc5f5#
+
+Note: you can never add any comments to this file, since all the comments have speacial meaning which are then used for updating the crd file. 
+
+
 
 Also notice here: https://github.com/Sher-Chowdhury/mysql-operator/commit/a9ae8d85f8ddda4e3c6d7b3713f1dee03b5fc5f5#diff-bbc388b9f979f725f3962a950d7b75b4R26
 
