@@ -21,20 +21,13 @@ type VolumeSettings struct {
 	StorageClass string `json:"storage_class,omitempty"`
 }
 
-// sher-end
-
 // MySQLSpec defines the desired state of MySQL
 type MySQLSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	// sher-start
 	Environment EnvironmentVariables `json:"environment"`
-	// here's a more sophisticated example:
-	// https://github.com/Sher-Chowdhury/prometheus-jmx-exporter-operator/blob/master/pkg/apis/banzaicloud/v1alpha1/types.go#L18-L32
-
-	Volume VolumeSettings `json:"volume"`
-	// sher-end
+	Volume      VolumeSettings       `json:"volume"`
 }
 
 // MySQLStatus defines the observed state of MySQL
