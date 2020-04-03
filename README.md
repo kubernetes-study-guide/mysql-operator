@@ -108,9 +108,9 @@ Note: you can never add any comments to this file, since all the comments have s
 
 
 
-Also notice here: https://github.com/Sher-Chowdhury/mysql-operator/commit/a9ae8d85f8ddda4e3c6d7b3713f1dee03b5fc5f5#diff-bbc388b9f979f725f3962a950d7b75b4R26
+Also in particular notice this json-bit on this line: https://github.com/Sher-Chowdhury/mysql-operator/commit/a9ae8d85f8ddda4e3c6d7b3713f1dee03b5fc5f5#diff-bbc388b9f979f725f3962a950d7b75b4R26
 
-We actually used struct tags to specify json related metadata - 
+This json-bit is used to to specify json related metadata - 
 https://stackoverflow.com/questions/10858787/what-are-the-uses-for-tags-in-go
 https://www.sohamkamani.com/blog/golang/2018-07-19-golang-omitempty/
 
