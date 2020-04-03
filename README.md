@@ -913,6 +913,8 @@ https://medium.com/@cloudark/introducing-kubernetes-operator-maturity-model-for-
 
 # setup up status info for our CR. 
 
+Useful link: https://medium.com/@xcoulon/customizing-the-server-side-printing-of-your-kubernetes-custom-resources-1c84b7631686
+
 At the moment `kubectl get mysql` only has 2 columns, name and age. We want to add more. 
 
 
