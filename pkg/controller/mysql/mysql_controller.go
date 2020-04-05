@@ -2,6 +2,8 @@ package mysql
 
 import (
 	"context"
+	"fmt"
+	"reflect"
 
 	cachev1alpha1 "github.com/Sher-Chowdhury/mysql-operator/pkg/apis/cache/v1alpha1"
 	pods "github.com/Sher-Chowdhury/mysql-operator/pkg/controller/mysql/resources/pods"
@@ -9,6 +11,7 @@ import (
 	services "github.com/Sher-Chowdhury/mysql-operator/pkg/controller/mysql/resources/services"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -97,6 +100,14 @@ type ReconcileMySQL struct {
 	scheme *runtime.Scheme
 }
 
+func getPodNames(pods []corev1.Pod) []string {
+	var podNames []string
+	for _, pod := range pods {
+		podNames = append(podNames, pod.Name)
+	}
+	return podNames
+}
+
 // Reconcile reads that state of the cluster for a MySQL object and makes changes based on the state read
 // and what is in the MySQL.Spec
 // TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
@@ -177,6 +188,23 @@ func (r *ReconcileMySQL) Reconcile(request reconcile.Request) (reconcile.Result,
 
 	// Pod already exists - don't requeue
 	reqLogger.Info("Skip reconcile: Pod already exists", "Pod.Namespace", found.Namespace, "Pod.Name", found.Name)
+
+	podList := &corev1.PodList{}
+	labeldata := map[string]string{"app": "mydb"}
+	labelSelector := labels.SelectorFromSet(labeldata)
+	listOps := &client.ListOptions{Namespace: "default", LabelSelector: labelSelector}
+	//err = r.client.List(context.TODO(), listOps, podList)
+	err = r.client.List(context.TODO(), podList, listOps)
+	if err != nil {
+		reqLogger.Info("Failed to list pods: %v", err)
+		return reconcile.Result{}, err
+	}
+	podNames := getPodNames(podList.Items)
+
+	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxx here is the pod name xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	fmt.Println(reflect.TypeOf(podNames))
+	fmt.Println(podNames[0])
+	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 	// Define a new Service object
 	service := services.NewServiceForCR(instance)

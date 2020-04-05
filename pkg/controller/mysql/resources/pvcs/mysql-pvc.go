@@ -25,25 +25,25 @@ func NewPvcForCR(cr *cachev1alpha1.MySQL) *corev1.PersistentVolumeClaim {
 		},
 	}
 
-	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxx Accessmodes xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-	println(pvcSpec.AccessModes)
-	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	//	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxx Accessmodes xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	//	println(pvcSpec.AccessModes)
+	//	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
-	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxx  StorageClassName xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-	println(pvcSpec.StorageClassName)
-	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	//	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxx  StorageClassName xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	//	println(pvcSpec.StorageClassName)
+	//	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 	if cr.Spec.Volume.StorageClass != "" {
 		pvcSpec.StorageClassName = &cr.Spec.Volume.StorageClass
 	}
 
-	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxx Accessmodes - after xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-	println(pvcSpec.AccessModes)
-	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	//	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxx Accessmodes - after xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	//	println(pvcSpec.AccessModes)
+	//	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
-	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxx  StorageClassName - after xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-	println(pvcSpec.StorageClassName)
-	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	//	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxx  StorageClassName - after xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	//	println(pvcSpec.StorageClassName)
+	//	println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 	return &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
