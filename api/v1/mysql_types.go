@@ -23,6 +23,14 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// EnvironmentVariables mirrors - https://hub.docker.com/_/mysql#Environment_Variables
+type EnvironmentVariables struct {
+	MysqlRootPassword string `json:"mysql_root_password"`
+	MysqlDatabase     string `json:"mysql_database"`
+	MysqlUser         string `json:"mysql_user"`
+	MysqlPassword     string `json:"mysql_password"`
+}
+
 // MysqlSpec defines the desired state of Mysql
 type MysqlSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -30,6 +38,9 @@ type MysqlSpec struct {
 
 	// Foo is an example field of Mysql. Edit mysql_types.go to remove/update
 	Foo string `json:"foo,omitempty"`
+
+	// Environment contains initial configs needed to create the mysql db
+	Environment EnvironmentVariables `json:"environment"`
 }
 
 // MysqlStatus defines the observed state of Mysql
