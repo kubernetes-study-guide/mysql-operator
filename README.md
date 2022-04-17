@@ -30,11 +30,12 @@ We will start with implementing quick+dirty techniques, but then gradually impro
 
 
 
-mysql kubernetes operator built using the operator-sdk
+mysql kubernetes operator built using the operator-sdk. 
 
 ```
 brew install operator-sdk
 ```
+Ref - https://sdk.operatorframework.io/docs/installation/
 
 ```
 $ operator-sdk version
@@ -43,7 +44,9 @@ operator-sdk version: "v1.18.1", commit: "707240f006ecfc0bc86e5c21f6874d302992d5
 
 
 quickstart guide - https://sdk.operatorframework.io/docs/building-operators/golang/quickstart/
-```
+
+
+Create a new boiler plate
 
 ```
 operator-sdk init --domain codingbee.net --repo github.com/Sher-Chowdhury/mysql-operator
