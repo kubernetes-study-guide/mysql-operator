@@ -46,15 +46,121 @@ operator-sdk version: "v1.18.1", commit: "707240f006ecfc0bc86e5c21f6874d302992d5
 quickstart guide - https://sdk.operatorframework.io/docs/building-operators/golang/quickstart/
 
 
-Create a new boiler plate
+Create a new boiler plate:
 
 ```
-operator-sdk init --domain codingbee.net --repo github.com/Sher-Chowdhury/mysql-operator
+mkdir mysql-operator
 cd mysql-operator
+operator-sdk init --domain codingbee.net --repo github.com/Sher-Chowdhury/mysql-operator
+Writing kustomize manifests for you to edit...
+Writing scaffold for you to edit...
+Get controller runtime:
+$ go get sigs.k8s.io/controller-runtime@v0.11.0
+Update dependencies:
+$ go mod tidy
+Next: define a resource with:
+$ operator-sdk create api
+```
+
+`domain` flag is explained here - https://book.kubebuilder.io/cronjob-tutorial/cronjob-tutorial.html#scaffolding-out-our-project
+
+Notice, the above output suggest running `operator-sdk create api`, we'll do that a bit later. 
+
+This ends up creating all of the following files (linked it up github to see this):
+
+```
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.dockerignore
+	Dockerfile
+	Makefile
+	PROJECT
+	config/
+	go.mod
+	go.sum
+	hack/
+	main.go
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+
+
+
+$ tree .
+.
+├── Dockerfile
+├── LICENSE
+├── Makefile
+├── PROJECT
+├── README.md
+├── config           # see here - https://book.kubebuilder.io/cronjob-tutorial/basic-project.html
+│   ├── default
+│   │   ├── kustomization.yaml
+│   │   ├── manager_auth_proxy_patch.yaml
+│   │   └── manager_config_patch.yaml
+│   ├── manager
+│   │   ├── controller_manager_config.yaml
+│   │   ├── kustomization.yaml
+│   │   └── manager.yaml
+│   ├── manifests
+│   │   └── kustomization.yaml
+│   ├── prometheus
+│   │   ├── kustomization.yaml
+│   │   └── monitor.yaml
+│   ├── rbac
+│   │   ├── auth_proxy_client_clusterrole.yaml
+│   │   ├── auth_proxy_role.yaml
+│   │   ├── auth_proxy_role_binding.yaml
+│   │   ├── auth_proxy_service.yaml
+│   │   ├── kustomization.yaml
+│   │   ├── leader_election_role.yaml
+│   │   ├── leader_election_role_binding.yaml
+│   │   ├── role_binding.yaml
+│   │   └── service_account.yaml
+│   └── scorecard
+│       ├── bases
+│       │   └── config.yaml
+│       ├── kustomization.yaml
+│       └── patches
+│           ├── basic.config.yaml
+│           └── olm.config.yaml
+├── go.mod
+├── go.sum
+├── hack
+│   └── boilerplate.go.txt
+└── main.go                  # learn more about this file's content here (really useful) - https://book.kubebuilder.io/architecture.html
+
+10 directories, 31 files
+```
+
+Ref - https://github.com/Sher-Chowdhury/mysql-operator/commit/dd31c892978bd622202cd6c2cdb7c3d48ddb0a9e
+
+
+Most of the boilerplate code is in the `config` folder, which right now contains `kustomize` yaml files. The starting point is `config/default/kustomization.yaml`. To see what the rendered output looks like, first download the kustomize binary:
+
+```
+make kustomize
+./bin/kustomize build config/default # this won't work yet. but will do later. 
 ```
 
 
 
+
+
+
+
+
+
+
+A single operator can be responsible for multiple crds. Here we create the first crd, called "mysql":
+
+
+
+```
 operator-sdk create api --group wordpress --version v1 --kind "Mysql" --resource --controller --verbose
 ```
 
