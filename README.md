@@ -2,6 +2,18 @@
 
 ## Overview
 
+Operator-sdk is actually a [wrapper around](https://sdk.operatorframework.io/docs/faqs/) the [kubebuilder](https://book.kubebuilder.io/introduction.html) binary.  
+
+
+Operator SDK offers additional features on top of the basic project scaffolding that Kubebuilder provides. By default, operator-sdk `init` generates a project integrated with:
+
+- Operator Lifecycle Manager, an installation and runtime management system for operators
+- OperatorHub, a community hub for publishing operators
+- Operator SDK scorecard, a tool for ensuring operator best-practices and developing cluster tests
+
+
+
+
 This guide is broken into 2 stages. 
 
 1. build a mysql operator
@@ -26,12 +38,21 @@ brew install operator-sdk
 
 ```
 $ operator-sdk version
-operator-sdk version: "v0.15.1", commit: "e35ec7b722ba095e6438f63fafb9e7326870b486", go version: "go1.13.6 darwin/amd64"
+operator-sdk version: "v1.18.1", commit: "707240f006ecfc0bc86e5c21f6874d302992d598", kubernetes version: "1.21", go version: "go1.17.7", GOOS: "darwin", GOARCH: "amd64"
+```
+
+
+quickstart guide - https://sdk.operatorframework.io/docs/building-operators/golang/quickstart/
 ```
 
 ```
-operator-sdk new mysql-operator --repo=github.com/Sher-Chowdhury/mysql-operator
+operator-sdk init --domain codingbee.net --repo github.com/Sher-Chowdhury/mysql-operator
 cd mysql-operator
+```
+
+
+
+operator-sdk create api --group wordpress --version v1 --kind "Mysql" --resource --controller --verbose
 ```
 
 
