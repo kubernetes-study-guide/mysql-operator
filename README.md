@@ -192,6 +192,90 @@ here we specified a (api) group-name called "wordpress". See - https://book.kube
 
 group-names is a way to organise your apis. E.g. if we're creating a generic "cms" based operator that contains a dozen crds's then maybe we can use wordpress/joomla/drupal...etc as logical group names. 
 
+Here's what the output looks like:
+
+```
+operator-sdk create api --group wordpress --version v1 --kind "Mysql" --resource --controller --verbose
+DEBU[0000] Debug logging is set                         
+Writing kustomize manifests for you to edit...
+Writing scaffold for you to edit...
+api/v1/mysql_types.go
+controllers/mysql_controller.go
+Update dependencies:
+$ go mod tidy
+Running make:
+$ make generate
+go: creating new go.mod: module tmp
+Downloading sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0
+go get: installing executables with 'go get' in module mode is deprecated.
+        To adjust and download dependencies of the current module, use 'go get -d'.
+        To install using requirements of the current module, use 'go install'.
+        To install ignoring the current module, use 'go install' with a version,
+        like 'go install example.com/cmd@latest'.
+        For more information, see https://golang.org/doc/go-get-install-deprecation
+        or run 'go help get' or 'go help install'.
+go get: added github.com/fatih/color v1.12.0
+go get: added github.com/go-logr/logr v1.2.0
+.
+.
+.
+go get: added sigs.k8s.io/structured-merge-diff/v4 v4.1.2
+go get: added sigs.k8s.io/yaml v1.3.0
+/Users/sherchowdhury/operators/mysql-operator/bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
+Next: implement your new API and generate the manifests (e.g. CRDs,CRs) with:
+$ make manifests
+```
+
+Notice above it prompts us to run `make manifests`. We'll do that later. 
+
+The above resulted in the following changes:
+
+```
+git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   PROJECT
+        modified:   go.mod
+        modified:   main.go
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        api/
+        config/crd/
+        config/rbac/mysql_editor_role.yaml
+        config/rbac/mysql_viewer_role.yaml
+        config/samples/
+        controllers/
+```
+
+Ref - https://github.com/Sher-Chowdhury/mysql-operator/commit/034d3d343da1c9d7c27359000ec4011bf4e04988
+
+
+Note we had to specify the following 3 flags when creating the api, `--group wordpress --version v1 --kind "Mysql"`. 
+
+That's important because it means that we specify this info in our cr's yaml. There's an example of this in the 
+newly generate sample, [config/samples/wordpress_v1_mysql.yaml](https://github.com/Sher-Chowdhury/mysql-operator/blob/034d3d343da1c9d7c27359000ec4011bf4e04988/config/samples/wordpress_v1_mysql.yaml). Here it is:
+
+Here it is:
+
+```
+apiVersion: wordpress.codingbee.net/v1
+kind: Mysql
+metadata:
+  name: mysql-sample
+spec:
+  # TODO(user): Add fields here
+```
+
+The `apiVersion` and `kind` combined pinpoints exactly what CR we want to create, i.e. which operator to create it (codingbee.net), which api group to use (wordpress), what crd to create (mysql), and what version to use (v1). 
+
+Note, our operator can create multple kinds with the same name, e.g. "mysql", but all in different api-groups, wordpress, joomla,...etc. 
+
+
 
 
 This would have created a crd and a sample cr file, that you can try deploying at this stage. They look like this:
