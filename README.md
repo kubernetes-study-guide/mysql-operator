@@ -258,7 +258,7 @@ Ref - https://github.com/Sher-Chowdhury/mysql-operator/commit/034d3d343da1c9d7c2
 Note we had to specify the following 3 flags when creating the api, `--group wordpress --version v1 --kind "Mysql"`. 
 
 That's important because it means that we specify this info in our cr's yaml. There's an example of this in the 
-newly generate sample, [config/samples/wordpress_v1_mysql.yaml](https://github.com/Sher-Chowdhury/mysql-operator/blob/034d3d343da1c9d7c27359000ec4011bf4e04988/config/samples/wordpress_v1_mysql.yaml). Here it is:
+newly generated sample, [config/samples/wordpress_v1_mysql.yaml](https://github.com/Sher-Chowdhury/mysql-operator/blob/034d3d343da1c9d7c27359000ec4011bf4e04988/config/samples/wordpress_v1_mysql.yaml). Here it is:
 
 Here it is:
 
@@ -278,55 +278,134 @@ Note, our operator can create multple kinds with the same name, e.g. "mysql", bu
 
 
 
+Earlier, we got prompted to run `make manifests`. Let's do that now:
+
+```
+make manifests
+go: creating new go.mod: module tmp
+Downloading sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0
+go get: installing executables with 'go get' in module mode is deprecated.
+        To adjust and download dependencies of the current module, use 'go get -d'.
+        To install using requirements of the current module, use 'go install'.
+        To install ignoring the current module, use 'go install' with a version,
+        like 'go install example.com/cmd@latest'.
+        For more information, see https://golang.org/doc/go-get-install-deprecation
+        or run 'go help get' or 'go help install'.
+go get: added github.com/fatih/color v1.12.0
+go get: added github.com/go-logr/logr v1.2.0
+.
+.
+.
+go get: added sigs.k8s.io/structured-merge-diff/v4 v4.1.2
+go get: added sigs.k8s.io/yaml v1.3.0
+/Users/sherchowdhury/operators/mysql-operator/bin/controller-gen rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+```
+
+This resulted in the following files being created:
+
+```
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        config/crd/bases/
+        config/rbac/role.yaml
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ tree config/crd/bases 
+config/crd/bases
+└── wordpress.codingbee.net_mysqls.yaml
+```
+
+ref - https://github.com/Sher-Chowdhury/mysql-operator/commit/203847db138bb6a69bb2c3252c463fc6badcd112
+
+
+This means that `make manifests` is used for generating all the operator's CRD's. 
+
+
+
+
+
+
 This would have created a crd and a sample cr file, that you can try deploying at this stage. They look like this:
 
 ```
-$ cat deploy/crds/cache.codingbee.net_mysqls_crd.yaml 
-apiVersion: apiextensions.k8s.io/v1beta1
+$ cat config/crd/bases/wordpress.codingbee.net_mysqls.yaml 
+---
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: mysqls.cache.codingbee.net
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: mysqls.wordpress.codingbee.net
 spec:
-  group: cache.codingbee.net
+  group: wordpress.codingbee.net
   names:
-    kind: MySQL
-    listKind: MySQLList
+    kind: Mysql
+    listKind: MysqlList
     plural: mysqls
     singular: mysql
   scope: Namespaced
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      description: MySQL is the Schema for the mysqls API
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: MySQLSpec defines the desired state of MySQL
-          type: object
-        status:
-          description: MySQLStatus defines the observed state of MySQL
-          type: object
-      type: object
-  version: v1alpha1
   versions:
-  - name: v1alpha1
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: Mysql is the Schema for the mysqls API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: MysqlSpec defines the desired state of Mysql
+            properties:
+              foo:
+                description: Foo is an example field of Mysql. Edit mysql_types.go
+                  to remove/update
+                type: string
+            type: object
+          status:
+            description: MysqlStatus defines the observed state of Mysql
+            type: object
+        type: object
     served: true
     storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
 ```
 
-NOTE: You must never make changes to the crd file directly. Intead you should edit it by first editing the mysql_types.go file and then run the `openshift generate k8s` and `openshift generate crds` commands. 
+NOTE: You must never make changes to the crd file directly. Instead you should edit it by first editing the `api/v1/mysql_types.go` file and then run 
+
+
+```
+make generate
+make manifests
+```
+
+`make generate` is soemthing you do for making any to the internal `api/v1/zz_generated.deepcopy.go` file. 
+
+
+
+
+
 
 and the sample custom resource (cr):
 
