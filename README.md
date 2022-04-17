@@ -63,6 +63,28 @@ $ operator-sdk create api
 ```
 
 `domain` flag is explained here - https://book.kubebuilder.io/cronjob-tutorial/cronjob-tutorial.html#scaffolding-out-our-project
+Domain is used as a way to prevent crds with the same name causing conflicts. I.e. the crd's fqdn includes the domain. In fact the fqdn structure is:
+
+```
+<crd-name>.<group-name>.<domain-name>
+```
+
+note: we'll  cover group-name a bit later, when we create our first crd. 
+
+e.g.:
+
+```
+mysql.wordpress.codingbee.net
+```
+
+
+
+
+You can view a list of them by running:
+
+```
+oc api-resources
+```
 
 Notice, the above output suggest running `operator-sdk create api`, we'll do that a bit later. 
 
@@ -133,6 +155,8 @@ $ tree .
 ├── hack
 │   └── boilerplate.go.txt
 └── main.go                  # learn more about this file's content here (really useful) - https://book.kubebuilder.io/architecture.html
+                             # and here's even more details of main.go - https://book.kubebuilder.io/cronjob-tutorial/empty-main.html
+                             # Note, this is the place where you decide whether the operator runs at namespace or cluster scope.  
 
 10 directories, 31 files
 ```
@@ -161,13 +185,14 @@ A single operator can be responsible for multiple crds. Here we create the first
 
 
 ```
-operator-sdk create api --group wordpress --version v1 --kind "Mysql" --resource --controller --verbose
+operator-sdk create api --group wordpress --version v1 --kind "Mysql" --resource --controller --verbose  # kind needs to start with uppercase
 ```
 
+here we specified a (api) group-name called "wordpress". See - https://book.kubebuilder.io/cronjob-tutorial/gvks.html
 
-```
-operator-sdk add api --api-version=cache.codingbee.net/v1alpha1 --kind=MySQL  # kind needs to start with uppercase
-```
+group-names is a way to organise your apis. E.g. if we're creating a generic "cms" based operator that contains a dozen crds's then maybe we can use wordpress/joomla/drupal...etc as logical group names. 
+
+
 
 This would have created a crd and a sample cr file, that you can try deploying at this stage. They look like this:
 
