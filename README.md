@@ -466,34 +466,6 @@ Ref - https://github.com/Sher-Chowdhury/mysql-operator/commit/9ac13449287d42d549
 
 
 
-
-
-
-For these changes to get propagated to the rest of the repo, run:
-
-```
-operator-sdk generate k8s
-```
-
-here's the resulting change - https://github.com/Sher-Chowdhury/mysql-operator/commit/10250ab5ee20d87a27f67dea6baff73600862f35
-
-Next run the following to get the changes reflected in the crd file:
-
-```
-operator-sdk generate crds
-```
-
-Here's the resulting change - https://github.com/Sher-Chowdhury/mysql-operator/commit/551f703ecd5315c592081ab4b86e34c25fe81f44
-
-Now let's create our operator's controller:
-
-```
-operator-sdk add controller --api-version=cache.codingbee.net/v1alpha1 --kind=MySQL
-```
-
-This ends up creating the file `pkg/controller/add_mysql.go` and the folder `pkg/controller/mysql/` along with all it's content - https://github.com/Sher-Chowdhury/mysql-operator/commit/a29ecf7c5247b448d47e68e412bfc9877199df9e
-
-
 Next update controller to make use of the mysql env vars - https://github.com/Sher-Chowdhury/mysql-operator/blob/6e4610c2931bb7ff5dfb140b3a8b8feaec484fe7/pkg/controller/mysql/mysql_controller.go#L150-L166 and 
 https://github.com/Sher-Chowdhury/mysql-operator/blob/6e4610c2931bb7ff5dfb140b3a8b8feaec484fe7/pkg/controller/mysql/mysql_controller.go#L137
 
