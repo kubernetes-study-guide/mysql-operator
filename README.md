@@ -400,37 +400,71 @@ make generate
 make manifests
 ```
 
-`make generate` is soemthing you do for making any to the internal `api/v1/zz_generated.deepcopy.go` file. 
+`make generate` is something you do for making any to the internal `api/v1/zz_generated.deepcopy.go` file. Whereas `make manifests` does the part that we're more interested in, i.e. it generates/updates the crd file. 
 
 
+Note: you can never add any comments to this file, since all the comments have special meaning which are then used for updating the crd file. E.g. comments our used for setting certain metadata, in the form of markers e.g.
+
+- [CRD validations](https://book.kubebuilder.io/reference/markers/crd-validation.html). Note, you can also set validations using
+  [validating webhooks](https://book.kubebuilder.io/cronjob-tutorial/webhook-implementation.html). You can use one or the other, or both. However validating webhooks is better overall, because it's more versatile/customisable. And also (if you are not using versioning properly) then installing different versions of the same crd on a cluster can risk breaking things, since crds are cluster
+  wide resources. 
+- for other types of markers, see: https://book.kubebuilder.io/reference/markers.html
 
 
+Now let's say we make the following change `api/v1/mysql_types.go` - https://github.com/Sher-Chowdhury/mysql-operator/commit/adb716913c9b91399452bb7847f468261424a869
 
 
-and the sample custom resource (cr):
-
-```
-$ cat deploy/crds/cache.codingbee.net_v1alpha1_mysql_cr.yaml
-apiVersion: cache.codingbee.net/v1alpha1
-kind: MySQL
-metadata:
-  name: example-mysql
-spec:
-  # Add fields here
-  size: 3
-```
-
-Added custom settings to pkg/apis/cache/v1alpha1/mysql_types.go - https://github.com/Sher-Chowdhury/mysql-operator/commit/a9ae8d85f8ddda4e3c6d7b3713f1dee03b5fc5f5#
-
-Note: you can never add any comments to this file, since all the comments have speacial meaning which are then used for updating the crd file. 
-
-
-
-Also in particular notice this json-bit on this line: https://github.com/Sher-Chowdhury/mysql-operator/commit/a9ae8d85f8ddda4e3c6d7b3713f1dee03b5fc5f5#diff-bbc388b9f979f725f3962a950d7b75b4R26
+Also in particular notice the json-bits. this basically acts as a way to map something in the yaml 
+file, e.g. "mysql_root_password" field, to a variable that you can call within your Go code, e.g. MysqlRootPassword. 
 
 This json-bit is used to to specify json related metadata - 
 https://stackoverflow.com/questions/10858787/what-are-the-uses-for-tags-in-go
 https://www.sohamkamani.com/blog/golang/2018-07-19-golang-omitempty/
+
+
+Then we update the internal file first:
+
+```
+make generate
+/Users/sherchowdhury/operators/mysql-operator/bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
+
+git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   api/v1/zz_generated.deepcopy.go
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+ref - https://github.com/Sher-Chowdhury/mysql-operator/commit/bd2042b8a0a096b8e90c7f80c477f65f7592cabe
+
+
+Then we update the crds:
+
+```
+make manifests
+/Users/sherchowdhury/operators/mysql-operator/bin/controller-gen rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+
+git status    
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   config/crd/bases/wordpress.codingbee.net_mysqls.yaml
+```
+
+Ref - https://github.com/Sher-Chowdhury/mysql-operator/commit/9ac13449287d42d549792345502f965bda609e99
+
+
+
+
+
 
 
 
