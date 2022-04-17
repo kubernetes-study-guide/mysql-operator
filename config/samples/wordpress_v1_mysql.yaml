@@ -1,0 +1,6 @@
+apiVersion: wordpress.codingbee.net/v1
+kind: Mysql
+metadata:
+  name: mysql-sample
+spec:
+  # TODO(user): Add fields here
