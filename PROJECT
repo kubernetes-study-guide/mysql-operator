@@ -1,0 +1,9 @@
+domain: codingbee.net
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: mysql-operator
+repo: github.com/Sher-Chowdhury/mysql-operator
+version: "3"
