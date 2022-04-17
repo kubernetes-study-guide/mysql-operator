@@ -35,10 +35,30 @@ spec:
           spec:
             description: MysqlSpec defines the desired state of Mysql
             properties:
+              environment:
+                description: Environment contains initial configs needed to create
+                  the mysql db
+                properties:
+                  mysql_database:
+                    type: string
+                  mysql_password:
+                    type: string
+                  mysql_root_password:
+                    type: string
+                  mysql_user:
+                    type: string
+                required:
+                - mysql_database
+                - mysql_password
+                - mysql_root_password
+                - mysql_user
+                type: object
               foo:
                 description: Foo is an example field of Mysql. Edit mysql_types.go
                   to remove/update
                 type: string
+            required:
+            - environment
             type: object
           status:
             description: MysqlStatus defines the observed state of Mysql
