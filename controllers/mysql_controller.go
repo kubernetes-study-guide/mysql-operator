@@ -147,10 +147,13 @@ func (r *MysqlReconciler) deploymentForMysql(cr *wordpressv1.Mysql) *appsv1.Depl
 				MatchLabels: labels,
 			},
 			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: labels,
+				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Image: "docker.io/mysql:latest",
-						Name:  "wordpressMysql",
+						Name:  "mysql-container",
 						Env:   containerEnvVars,
 					}},
 				},
