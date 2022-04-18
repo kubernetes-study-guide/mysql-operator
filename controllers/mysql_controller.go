@@ -104,26 +104,25 @@ func (r *MysqlReconciler) deploymentForMysql(cr *wordpressv1.Mysql) *appsv1.Depl
 
 	var replicas int32 = 1
 
-
 	mysqlEnvVars := cr.Spec.Environment
 
 	containerEnvVars := []corev1.EnvVar{
-        {
-            Name:  "MYSQL_ROOT_PASSWORD",
-            Value: mysqlEnvVars.MysqlRootPassword,
-        },
-        {
-            Name:  "MYSQL_DATABASE",
-            Value: mysqlEnvVars.MysqlDatabase,
-        },
-        {
-            Name:  "MYSQL_USER",
-            Value: mysqlEnvVars.MysqlUser,
-        },
-        {
-            Name:  "MYSQL_PASSWORD",
-            Value: mysqlEnvVars.MysqlPassword,
-        },
+		{
+			Name:  "MYSQL_ROOT_PASSWORD",
+			Value: mysqlEnvVars.MysqlRootPassword,
+		},
+		{
+			Name:  "MYSQL_DATABASE",
+			Value: mysqlEnvVars.MysqlDatabase,
+		},
+		{
+			Name:  "MYSQL_USER",
+			Value: mysqlEnvVars.MysqlUser,
+		},
+		{
+			Name:  "MYSQL_PASSWORD",
+			Value: mysqlEnvVars.MysqlPassword,
+		},
 	}
 
 	deploymentObject := &appsv1.Deployment{
@@ -138,15 +137,15 @@ func (r *MysqlReconciler) deploymentForMysql(cr *wordpressv1.Mysql) *appsv1.Depl
 					Containers: []corev1.Container{{
 						Image: "docker.io/mysql:latest",
 						Name:  "wordpressMysql",
-                        Env: containerEnvVars,
+						Env:   containerEnvVars,
 					}},
 				},
 			},
 		},
 	}
 
-	// This sets this mysql cr as the owner of this deployment object. 
-    // so that if cr is deleted then this deployment should also get deleted (garbage collected)
+	// This sets this mysql cr as the owner of this deployment object.
+	// so that if cr is deleted then this deployment should also get deleted (garbage collected)
 	controllerutil.SetControllerReference(cr, deploymentObject, r.Scheme)
 	return deploymentObject
 }
