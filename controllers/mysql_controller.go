@@ -44,6 +44,8 @@ type MysqlReconciler struct {
 //+kubebuilder:rbac:groups=wordpress.codingbee.net,resources=mysqls/finalizers,verbs=update
 
 // I added the following to allow this controller to do `oc get deployments` and `oc get pods`
+// otherwise controller's pod log's shows errors like:
+// failed to list *v1.Deployment: deployments.apps is forbidden: User "system:serviceaccount:mysql-operator-system:mysql-operator-controller-manager" cannot list resource "deployments" in API group "apps" at the cluster scope
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
@@ -129,6 +131,13 @@ func (r *MysqlReconciler) deploymentForMysql(cr *wordpressv1.Mysql) *appsv1.Depl
 		},
 	}
 
+
+    // Deployments makes use of labels as a way to keep track of which pods belong to which deployments. 
+    labels := map[string]string{}
+    labels["app"] = cr.Name
+    labels["apptype"] = "db"
+
+
 	deploymentObject := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name + "-msyql",
@@ -136,6 +145,9 @@ func (r *MysqlReconciler) deploymentForMysql(cr *wordpressv1.Mysql) *appsv1.Depl
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
+            Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
