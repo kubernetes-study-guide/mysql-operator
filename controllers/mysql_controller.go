@@ -131,12 +131,10 @@ func (r *MysqlReconciler) deploymentForMysql(cr *wordpressv1.Mysql) *appsv1.Depl
 		},
 	}
 
-
-    // Deployments makes use of labels as a way to keep track of which pods belong to which deployments. 
-    labels := map[string]string{}
-    labels["app"] = cr.Name
-    labels["apptype"] = "db"
-
+	// Deployments makes use of labels as a way to keep track of which pods belong to which deployments.
+	labels := map[string]string{}
+	labels["app"] = cr.Name
+	labels["apptype"] = "db"
 
 	deploymentObject := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -145,7 +143,7 @@ func (r *MysqlReconciler) deploymentForMysql(cr *wordpressv1.Mysql) *appsv1.Depl
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
-            Selector: &metav1.LabelSelector{
+			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
 			Template: corev1.PodTemplateSpec{
