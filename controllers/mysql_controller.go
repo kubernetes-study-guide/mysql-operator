@@ -43,6 +43,10 @@ type MysqlReconciler struct {
 //+kubebuilder:rbac:groups=wordpress.codingbee.net,resources=mysqls/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=wordpress.codingbee.net,resources=mysqls/finalizers,verbs=update
 
+// I added the following to allow this controller to do `oc get deployments` and `oc get pods`
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
+
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
