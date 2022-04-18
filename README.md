@@ -555,6 +555,41 @@ https://github.com/Sher-Chowdhury/mysql-operator/blob/6e4610c2931bb7ff5dfb140b3a
 
 
 
+Now we can test our code. There's 2 ways to do this:
+
+- running the controller locally on the macbook, using `make install` and `make run`. This is faster, but can run into problems if webhooks are involved. 
+- or build the controller's image and deploy it. using `make deploy`. This approach takes a bit longer to, but is more production like and easier.
+
+
+We'll cover the `make deploy` approach for now. First we build the image that our controller's pod will instantiate from:
+- https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/#configure-the-operators-image-registry
+
+First set the IMG env var:
+
+```
+export account=sher_chowdhury0
+export image_name=mysql-operator
+export tag_version=v0.0.1
+# docker login quay.io -u sher.chowdhury@ibm.com #-p xxxxxxxxxxx
+export IMG=quay.io/${account}/${image_name}:${tag_version}
+```
+
+Then push up the controller's image:
+
+```
+make docker-build 
+make docker-push
+```
+
+Now deploy the operator to the cluster (ensure you're in the namespace you want deploy the operator to). 
+
+```
+
+```
+
+
+
+
 Now deploy the crd (you can also deploy the example cr too if you want too):
 
 ```
