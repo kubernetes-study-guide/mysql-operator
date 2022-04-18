@@ -161,6 +161,8 @@ $ tree .
 10 directories, 31 files
 ```
 
+By the default, the boilerplate code is hardcoded to run the controller at the cluster scope. If you want to do it at a namespace scope then you should do it with the "WATCH_NAMESPACE" env variable - https://sdk.operatorframework.io/docs/building-operators/golang/operator-scope/#configuring-watch-namespaces-dynamically
+
 Ref - https://github.com/Sher-Chowdhury/mysql-operator/commit/dd31c892978bd622202cd6c2cdb7c3d48ddb0a9e
 
 
@@ -406,7 +408,7 @@ make manifests
 Note: you can never add any comments to this file, since all the comments have special meaning which are then used for updating the crd file. E.g. comments our used for setting certain metadata, in the form of markers e.g.
 
 - [CRD validations](https://book.kubebuilder.io/reference/markers/crd-validation.html). Note, you can also set validations using
-  [validating webhooks](https://book.kubebuilder.io/cronjob-tutorial/webhook-implementation.html). You can use one or the other, or both. However validating webhooks is better overall, because it's more versatile/customisable. And also (if you are not using versioning properly) then installing different versions of the same crd on a cluster can risk breaking things, since crds are cluster
+  [validating webhooks](https://book.kubebuilder.io/cronjob-tutorial/webhook-implementation.html). You can use one or the other, or both. However validating webhooks is better overall, because it's more versatile/customisable. And also (if you are not using versioning properly) then installing different versions of the same crd on a cluster can risk breaking things, since crds are cluster. Note, CRDs can now exist at the cluster scope -https://sdk.operatorframework.io/docs/building-operators/golang/crds-scope/#set-create-api---namespaced-flag
   wide resources. 
 - for other types of markers, see: https://book.kubebuilder.io/reference/markers.html
 
