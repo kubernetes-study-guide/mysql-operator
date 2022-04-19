@@ -550,10 +550,18 @@ Note: I couldn't find an easy place to identify which packages to use, e.g. `app
 
 
 
-Next update controller to make use of the mysql env vars - url????
+Next update controller to make use of the mysql env vars - https://github.com/Sher-Chowdhury/mysql-operator/commit/f2055ba8541872c3815dd38fceec4457eac58c4a 
 
 Tip: use `oc explain deployments` to see what the required fields are for the resources you're created, and ensure those are setup. 
 
+we added some `+kubebuilder` lines so we also have to do the following:
+
+```
+make generate
+make manifests
+```
+
+Which resulted in - https://github.com/Sher-Chowdhury/mysql-operator/commit/786b8054e9563776d9f8f2cfdb083febafa92b22
 
 
 Now we can test our code. There's 2 ways to do this:
@@ -742,15 +750,7 @@ NAME                                  READY   STATUS    RESTARTS   AGE
 mysql-sample-msyql-68ff9844b4-fsbn7   1/1     Running   0          89s
 ```
 
-
-
-
-
-
-
-Update the controller to use the mysql image, rather than the busybox image - https://github.com/Sher-Chowdhury/mysql-operator/commit/0bc124b3447dea2d53a16bd42f1e084abd306b83
-
-
+Now, need to add unit tests - 
 
 
 Now deploy the operator. Theres 2 ways to do that. deploy it as a pod, or run it locally. 
