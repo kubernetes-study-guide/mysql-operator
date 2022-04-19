@@ -542,6 +542,7 @@ Now here's an example of how to update this file:
 - https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/
 - https://book.kubebuilder.io/cronjob-tutorial/controller-implementation.html
 - https://suedbroecker.net/2022/02/18/start-to-develop-a-simple-operator-to-deploy-the-frontend-application-of-the-open-source-multi-cloud-asset-to-build-saas%c2%b6/
+- https://github.com/thomassuedbroecker/multi-tenancy-frontend-operator
 - https://sdk.operatorframework.io/docs/building-operators/golang/references/client/#example-usage
 - https://developer.ibm.com/learningpaths/kubernetes-operators/develop-deploy-simple-operator/deep-dive-memcached-operator-code/
 
@@ -578,7 +579,7 @@ First set the IMG and quay_password env vars:
 ```
 export account=sher_chowdhury0
 export image_name=mysql-operator
-export tag_version=latest
+export tag_version=latest           # note using "latest" in order to always gaurantee image pulls. 
 export quay_password=xxxxxxxxx
 # docker login quay.io -u sher.chowdhury@ibm.com -p $quay_password
 export IMG=quay.io/${account}/${image_name}:${tag_version}
@@ -750,7 +751,10 @@ NAME                                  READY   STATUS    RESTARTS   AGE
 mysql-sample-msyql-68ff9844b4-fsbn7   1/1     Running   0          89s
 ```
 
-Now, need to add unit tests - 
+Now, need to add unit tests:
+
+- https://sdk.operatorframework.io/docs/building-operators/golang/testing/
+- https://book.kubebuilder.io/cronjob-tutorial/writing-tests.html
 
 
 Now deploy the operator. Theres 2 ways to do that. deploy it as a pod, or run it locally. 
