@@ -652,6 +652,9 @@ oc project mysql-operator-system
 Now using project "mysql-operator-system" on server "https://api.crowned.cp.fyre.ibm.com:6443".
 ```
 
+Note: The creation of a crd is a bit like creating a new table for storing mysql cr data in etcd. 
+
+
 ...and created all of the following inside that namespace:
 
 ```
@@ -710,6 +713,26 @@ oc get mysqls
 NAME           AGE
 mysql-sample   38s
 
+oc get mysqls mysql-sample -o yaml
+apiVersion: wordpress.codingbee.net/v1
+kind: Mysql
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"wordpress.codingbee.net/v1","kind":"Mysql","metadata":{"annotations":{},"name":"mysql-sample","namespace":"test"},"spec":{"environment":{"mysql_database":"mywpdb","mysql_password":"dbpassword","mysql_root_password":"rootpasswod","mysql_user":"adminuser"}}}
+  creationTimestamp: "2022-04-19T12:08:28Z"
+  generation: 1
+  name: mysql-sample
+  namespace: test
+  resourceVersion: "431917"
+  uid: dfc94267-c301-4b2d-89a4-3ef532f5cc23
+spec:
+  environment:
+    mysql_database: mywpdb
+    mysql_password: dbpassword
+    mysql_root_password: rootpasswod
+    mysql_user: adminuser
+
 oc get deployments
 NAME                 READY   UP-TO-DATE   AVAILABLE   AGE
 mysql-sample-msyql   1/1     1            1           53s
@@ -720,66 +743,9 @@ mysql-sample-msyql-68ff9844b4-fsbn7   1/1     Running   0          89s
 ```
 
 
-Now deploy the crd (you can also deploy the example cr too if you want too):
-
-```
-kubectl apply -f deploy/crds/cache.codingbee.net_mysqls_crd.yaml
-```
-
-The above is bit like creating a new table for storing mysql cr data in etcd. Let's check out etcd now has this crd:
-
-```
-$ kubectl get customresourcedefinitions                      
-NAME                         CREATED AT
-mysqls.cache.codingbee.net   2020-02-12T22:30:00Z
-```
 
 
 
-After that you can list your mysql instances:
-
-```
-$ kubectl get mysql
-No resources found in default namespace.
-```
-
-Now you can 
-
-```
-$ kubectl apply -f deploy/crds/my-mysql-db-cr.yaml  
-
-mysql.cache.codingbee.net/my-mysql-db created
-```
-
-This simply creates a new entry in the new table created inside etcd. 
-
-```
-$ kubectl get mysql                                                      
-NAME          AGE
-my-mysql-db   22s
-
-
-$ kubectl get mysql my-mysql-db -o yaml
-apiVersion: cache.codingbee.net/v1alpha1
-kind: MySQL
-metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"cache.codingbee.net/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"my-mysql-db","namespace":"default"},"spec":{"environment":{"mysql_database":"wordpressDB","mysql_password":"wpPassword","mysql_root_password":"wpAdminPassword","mysql_user":"wpuser"}}}
-  creationTimestamp: "2020-02-15T13:36:06Z"
-  generation: 1
-  name: my-mysql-db
-  namespace: default
-  resourceVersion: "154981"
-  selfLink: /apis/cache.codingbee.net/v1alpha1/namespaces/default/mysqls/my-mysql-db
-  uid: 9b3601a6-de87-4f0c-b849-5cd385472ee4
-spec:
-  environment:
-    mysql_database: wordpressDB
-    mysql_password: wpPassword
-    mysql_root_password: wpAdminPassword
-    mysql_user: wpuser
-```
 
 
 Update the controller to use the mysql image, rather than the busybox image - https://github.com/Sher-Chowdhury/mysql-operator/commit/0bc124b3447dea2d53a16bd42f1e084abd306b83
