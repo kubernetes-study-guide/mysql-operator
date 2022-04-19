@@ -3,4 +3,8 @@ kind: Mysql
 metadata:
   name: mysql-sample
 spec:
-  # TODO(user): Add fields here
+  environment:
+    mysql_root_password: rootpasswod
+    mysql_database: mywpdb
+    mysql_user: adminuser
+    mysql_password: dbpassword
