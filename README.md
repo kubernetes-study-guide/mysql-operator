@@ -569,7 +569,7 @@ First set the IMG env var:
 ```
 export account=sher_chowdhury0
 export image_name=mysql-operator
-export tag_version=v0.0.1
+export tag_version=latest
 # docker login quay.io -u sher.chowdhury@ibm.com #-p xxxxxxxxxxx
 export IMG=quay.io/${account}/${image_name}:${tag_version}
 ```
@@ -581,13 +581,120 @@ make docker-build
 make docker-push
 ```
 
-Now deploy the operator to the cluster (ensure you're in the namespace you want deploy the operator to). 
+Now deploy the operator to the cluster. 
 
 ```
-
+make deploy
+/Users/sherchowdhury/operators/mysql-operator/bin/controller-gen rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+cd config/manager && /Users/sherchowdhury/operators/mysql-operator/bin/kustomize edit set image controller=quay.io/sher_chowdhury0/mysql-operator:v0.0.1
+/Users/sherchowdhury/operators/mysql-operator/bin/kustomize build config/default | kubectl apply -f -
+namespace/mysql-operator-system created
+customresourcedefinition.apiextensions.k8s.io/mysqls.wordpress.codingbee.net created
+serviceaccount/mysql-operator-controller-manager created
+role.rbac.authorization.k8s.io/mysql-operator-leader-election-role created
+clusterrole.rbac.authorization.k8s.io/mysql-operator-manager-role created
+clusterrole.rbac.authorization.k8s.io/mysql-operator-metrics-reader created
+clusterrole.rbac.authorization.k8s.io/mysql-operator-proxy-role created
+rolebinding.rbac.authorization.k8s.io/mysql-operator-leader-election-rolebinding created
+clusterrolebinding.rbac.authorization.k8s.io/mysql-operator-manager-rolebinding created
+clusterrolebinding.rbac.authorization.k8s.io/mysql-operator-proxy-rolebinding created
+configmap/mysql-operator-manager-config created
+service/mysql-operator-controller-manager-metrics-service created
+deployment.apps/mysql-operator-controller-manager created
 ```
 
+there's a lot of useful info here, i.e. it lists everything that's been created. e.g. it created our new crd, and namespace called `namespace/mysql-operator-system`: 
 
+```
+oc get crds mysqls.wordpress.codingbee.net 
+NAME                             CREATED AT
+mysqls.wordpress.codingbee.net   2022-04-18T21:59:42Z
+
+
+oc project mysql-operator-system 
+Now using project "mysql-operator-system" on server "https://api.crowned.cp.fyre.ibm.com:6443".
+```
+
+...and created all of the following inside that namespace:
+
+```
+$ oc get serviceaccount mysql-operator-controller-manager 
+NAME                                SECRETS   AGE
+mysql-operator-controller-manager   2         10m
+
+oc get role mysql-operator-leader-election-role 
+NAME                                  CREATED AT
+mysql-operator-leader-election-role   2022-04-18T21:59:43Z
+
+$ oc get clusterrole mysql-operator-manager-role mysql-operator-metrics-reader mysql-operator-proxy-role                                           
+NAME                            CREATED AT
+mysql-operator-manager-role     2022-04-18T21:59:43Z
+mysql-operator-metrics-reader   2022-04-18T21:59:44Z
+mysql-operator-proxy-role       2022-04-18T21:59:44Z
+
+oc get rolebinding mysql-operator-leader-election-rolebinding
+NAME                                         ROLE                                       AGE
+mysql-operator-leader-election-rolebinding   Role/mysql-operator-leader-election-role   12m
+
+oc get clusterrolebindings mysql-operator-manager-rolebinding mysql-operator-proxy-rolebinding
+NAME                                 ROLE                                      AGE
+mysql-operator-manager-rolebinding   ClusterRole/mysql-operator-manager-role   13m
+mysql-operator-proxy-rolebinding     ClusterRole/mysql-operator-proxy-role     13m
+
+oc get configmap mysql-operator-manager-config
+NAME                            DATA   AGE
+mysql-operator-manager-config   1      15m
+
+oc get service/mysql-operator-controller-manager-metrics-service
+NAME                                                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+mysql-operator-controller-manager-metrics-service   ClusterIP   172.30.154.181   <none>        8443/TCP   15m
+
+oc get deployment.apps/mysql-operator-controller-manager        
+NAME                                READY   UP-TO-DATE   AVAILABLE   AGE
+mysql-operator-controller-manager   0/1     1            0           15m         # notice pod is failing to start. 
+```
+
+However the pod is failing to start up because we havent provided a pull secret. 
+
+```
+oc get pods
+NAME                                                 READY   STATUS             RESTARTS   AGE
+mysql-operator-controller-manager-86d547d545-9r6gs   1/2     ImagePullBackOff   0          22m
+```
+
+We can fix this by following - https://docs.openshift.com/container-platform/4.10/openshift_images/managing_images/using-image-pull-secrets.html
+
+i.e. create a "docker-registry" secret containing our docker creds
+
+```
+oc create secret docker-registry quay-io \                                         
+    --docker-server=quay.io \          
+    --docker-username=sher.chowdhury@ibm.com \
+    --docker-password=xxxxxxxxx \
+    --docker-email=sher.chowdhury@ibm.com
+secret/quay-io created
+```
+
+Then link this secret (quay-io) it to the serviceaccount (mysql-operator-controller-manager) that was created by `make deploy` earlier:
+
+```
+oc secrets link mysql-operator-controller-manager quay-io --for=pull
+```
+
+That should now fix it. 
+
+No to delete the operator, simply do:
+
+```
+make undeploy
+```
+
+and to deploy again, do:
+
+```
+make deploy
+```
+Note: you need to have the IMG env var set before hand in order for `make deploy` to work
 
 
 Now deploy the crd (you can also deploy the example cr too if you want too):
