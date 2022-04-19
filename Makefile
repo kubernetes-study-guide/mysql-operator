@@ -142,6 +142,10 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
+	oc create secret docker-registry quay-io --docker-server=quay.io --docker-username=sher.chowdhury@ibm.com  --docker-password=${quay_password} --docker-email=sher.chowdhury@ibm.com --namespace mysql-operator-system
+	oc secrets link mysql-operator-controller-manager quay-io --for=pull --namespace mysql-operator-system
+	oc scale deployment mysql-operator-controller-manager --replicas 0 --namespace mysql-operator-system
+	oc scale deployment mysql-operator-controller-manager --replicas 1 --namespace mysql-operator-system
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
