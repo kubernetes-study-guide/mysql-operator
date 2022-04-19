@@ -550,8 +550,9 @@ Note: I couldn't find an easy place to identify which packages to use, e.g. `app
 
 
 
-Next update controller to make use of the mysql env vars - https://github.com/Sher-Chowdhury/mysql-operator/blob/6e4610c2931bb7ff5dfb140b3a8b8feaec484fe7/pkg/controller/mysql/mysql_controller.go#L150-L166 and 
-https://github.com/Sher-Chowdhury/mysql-operator/blob/6e4610c2931bb7ff5dfb140b3a8b8feaec484fe7/pkg/controller/mysql/mysql_controller.go#L137
+Next update controller to make use of the mysql env vars - url????
+
+Tip: use `oc explain deployments` to see what the required fields are for the resources you're created, and ensure those are setup. 
 
 
 
@@ -564,13 +565,14 @@ Now we can test our code. There's 2 ways to do this:
 We'll cover the `make deploy` approach for now. First we build the image that our controller's pod will instantiate from:
 - https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/#configure-the-operators-image-registry
 
-First set the IMG env var:
+First set the IMG and quay_password env vars:
 
 ```
 export account=sher_chowdhury0
 export image_name=mysql-operator
 export tag_version=latest
-# docker login quay.io -u sher.chowdhury@ibm.com #-p xxxxxxxxxxx
+export quay_password=xxxxxxxxx
+# docker login quay.io -u sher.chowdhury@ibm.com -p $quay_password
 export IMG=quay.io/${account}/${image_name}:${tag_version}
 ```
 
@@ -581,12 +583,12 @@ make docker-build
 make docker-push
 ```
 
-Now deploy the operator to the cluster. 
+Now deploy the operator to the cluster (ensure `IMG` and `quay_password` env vars are set before running `make deploy`). 
 
 ```
 make deploy
 /Users/sherchowdhury/operators/mysql-operator/bin/controller-gen rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-cd config/manager && /Users/sherchowdhury/operators/mysql-operator/bin/kustomize edit set image controller=quay.io/sher_chowdhury0/mysql-operator:v0.0.1
+cd config/manager && /Users/sherchowdhury/operators/mysql-operator/bin/kustomize edit set image controller=quay.io/sher_chowdhury0/mysql-operator:latest
 /Users/sherchowdhury/operators/mysql-operator/bin/kustomize build config/default | kubectl apply -f -
 namespace/mysql-operator-system created
 customresourcedefinition.apiextensions.k8s.io/mysqls.wordpress.codingbee.net created
@@ -601,7 +603,42 @@ clusterrolebinding.rbac.authorization.k8s.io/mysql-operator-proxy-rolebinding cr
 configmap/mysql-operator-manager-config created
 service/mysql-operator-controller-manager-metrics-service created
 deployment.apps/mysql-operator-controller-manager created
+oc create secret docker-registry quay-io --docker-server=quay.io --docker-username=sher.chowdhury@ibm.com  --docker-password=xxxxx --docker-email=sher.chowdhury@ibm.com --namespace mysql-operator-system
+secret/quay-io created
+oc secrets link mysql-operator-controller-manager quay-io --for=pull --namespace mysql-operator-system
+oc scale deployment mysql-operator-controller-manager --replicas 0 --namespace mysql-operator-system
+deployment.apps/mysql-operator-controller-manager scaled
+oc scale deployment mysql-operator-controller-manager --replicas 1 --namespace mysql-operator-system
+deployment.apps/mysql-operator-controller-manager scaled
 ```
+
+Note: I add a few lines to the make-deploy target to create imagepullsecret for quay.io and then refreshed the controller's deployment. Essentially getting the make-deploy to do:
+
+```
+oc get pods
+NAME                                                 READY   STATUS             RESTARTS   AGE
+mysql-operator-controller-manager-86d547d545-9r6gs   1/2     ImagePullBackOff   0          22m
+```
+
+i.e. create a "docker-registry" secret containing our docker creds
+
+```
+oc create secret docker-registry quay-io \                                         
+    --docker-server=quay.io \          
+    --docker-username=sher.chowdhury@ibm.com \
+    --docker-password=xxxxxxxxx \
+    --docker-email=sher.chowdhury@ibm.com
+secret/quay-io created
+```
+
+Then link this secret (quay-io) it to the serviceaccount (mysql-operator-controller-manager) that was created by `make deploy` earlier:
+
+```
+oc secrets link mysql-operator-controller-manager quay-io --for=pull
+```
+
+for more info, see - https://docs.openshift.com/container-platform/4.10/openshift_images/managing_images/using-image-pull-secrets.html
+
 
 there's a lot of useful info here, i.e. it lists everything that's been created. e.g. it created our new crd, and namespace called `namespace/mysql-operator-system`: 
 
@@ -651,50 +688,36 @@ mysql-operator-controller-manager-metrics-service   ClusterIP   172.30.154.181  
 
 oc get deployment.apps/mysql-operator-controller-manager        
 NAME                                READY   UP-TO-DATE   AVAILABLE   AGE
-mysql-operator-controller-manager   0/1     1            0           15m         # notice pod is failing to start. 
-```
+mysql-operator-controller-manager   1/1     1            0           15m    
 
-However the pod is failing to start up because we havent provided a pull secret. 
-
-```
 oc get pods
-NAME                                                 READY   STATUS             RESTARTS   AGE
-mysql-operator-controller-manager-86d547d545-9r6gs   1/2     ImagePullBackOff   0          22m
+NAME                                  READY   STATUS    RESTARTS   AGE
+mysql-sample-msyql-68ff9844b4-znjqc   1/1     Running   0          10m
 ```
 
-We can fix this by following - https://docs.openshift.com/container-platform/4.10/openshift_images/managing_images/using-image-pull-secrets.html
+By default this operator is running at a cluster level. More code changes are required to run this at a namespace level - https://sdk.operatorframework.io/docs/building-operators/golang/operator-scope/#configuring-watch-namespaces-dynamically
 
-i.e. create a "docker-registry" secret containing our docker creds
-
-```
-oc create secret docker-registry quay-io \                                         
-    --docker-server=quay.io \          
-    --docker-username=sher.chowdhury@ibm.com \
-    --docker-password=xxxxxxxxx \
-    --docker-email=sher.chowdhury@ibm.com
-secret/quay-io created
-```
-
-Then link this secret (quay-io) it to the serviceaccount (mysql-operator-controller-manager) that was created by `make deploy` earlier:
+Now let's test this, by creating a mysql cr. 
 
 ```
-oc secrets link mysql-operator-controller-manager quay-io --for=pull
-```
+oc new-project test
+oc create secret docker-registry docker-io --docker-server=docker.io --docker-username=schowdhuryibm  --docker-password=xxxxxx --docker-email=sher.chowdhury@ibm.com
 
-That should now fix it. 
+oc apply -f config/samples/wordpress_v1_mysql.yaml
+mysql.wordpress.codingbee.net/mysql-sample created
 
-No to delete the operator, simply do:
+oc get mysqls                                     
+NAME           AGE
+mysql-sample   38s
 
-```
-make undeploy
-```
+oc get deployments
+NAME                 READY   UP-TO-DATE   AVAILABLE   AGE
+mysql-sample-msyql   1/1     1            1           53s
 
-and to deploy again, do:
-
+oc get pods       
+NAME                                  READY   STATUS    RESTARTS   AGE
+mysql-sample-msyql-68ff9844b4-fsbn7   1/1     Running   0          89s
 ```
-make deploy
-```
-Note: you need to have the IMG env var set before hand in order for `make deploy` to work
 
 
 Now deploy the crd (you can also deploy the example cr too if you want too):
