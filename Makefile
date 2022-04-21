@@ -235,3 +235,10 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+# Custom targets created by me. 
+.PHONY: new-project
+new-project:
+	oc new-project ${NEW_PROJECT}
+	oc create secret docker-registry docker-io --docker-server=docker.io --docker-username=schowdhuryibm  --docker-password=${docker_password} --docker-email=sher.chowdhury@ibm.com
+	oc patch serviceaccount default  -p "{\"imagePullSecrets\": [{\"name\": \"image-pull-secret\"}]}" -n ${NEW_PROJECT}

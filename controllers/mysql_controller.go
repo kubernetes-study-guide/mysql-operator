@@ -134,14 +134,6 @@ func (r *MysqlReconciler) deploymentForMysql(cr *wordpressv1.Mysql) *appsv1.Depl
 	labels["app"] = cr.Name
 	labels["apptype"] = "db"
 
-	// Need to ensure a secret call "docker-io" exists
-	// oc create secret docker-registry docker-io --docker-server=docker.io --docker-username=schowdhuryibm  --docker-password=xxxxxx --docker-email=sher.chowdhury@ibm.com
-	dockerIoPullSecrets := []corev1.LocalObjectReference{
-		{
-			Name: "docker-io",
-		},
-	}
-
 	deploymentObject := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name + "-mysql",
@@ -162,7 +154,6 @@ func (r *MysqlReconciler) deploymentForMysql(cr *wordpressv1.Mysql) *appsv1.Depl
 						Name:  "mysql-container",
 						Env:   containerEnvVars,
 					}},
-					ImagePullSecrets: dockerIoPullSecrets,
 				},
 			},
 		},
