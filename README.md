@@ -621,32 +621,8 @@ oc scale deployment mysql-operator-controller-manager --replicas 1 --namespace m
 deployment.apps/mysql-operator-controller-manager scaled
 ```
 
-Note: I add a few lines to the make-deploy target to create imagepullsecret for quay.io and then refreshed the controller's deployment. Essentially getting the make-deploy to do:
+Note: I add a few lines to the make-deploy target to create imagepullsecret for quay.io and then refreshed the controller's deployment. Otherwise I would get an error when trying to pull controller pod's image. 
 
-```
-oc get pods
-NAME                                                 READY   STATUS             RESTARTS   AGE
-mysql-operator-controller-manager-86d547d545-9r6gs   1/2     ImagePullBackOff   0          22m
-```
-
-i.e. create a "docker-registry" secret containing our docker creds
-
-```
-oc create secret docker-registry quay-io \                                         
-    --docker-server=quay.io \          
-    --docker-username=sher.chowdhury@ibm.com \
-    --docker-password=xxxxxxxxx \
-    --docker-email=sher.chowdhury@ibm.com
-secret/quay-io created
-```
-
-Then link this secret (quay-io) it to the serviceaccount (mysql-operator-controller-manager) that was created by `make deploy` earlier:
-
-```
-oc secrets link mysql-operator-controller-manager quay-io --for=pull
-```
-
-for more info, see - https://docs.openshift.com/container-platform/4.10/openshift_images/managing_images/using-image-pull-secrets.html
 
 
 there's a lot of useful info here, i.e. it lists everything that's been created. e.g. it created our new crd, and namespace called `namespace/mysql-operator-system`: 
@@ -709,12 +685,14 @@ mysql-sample-msyql-68ff9844b4-znjqc   1/1     Running   0          10m
 
 By default this operator is running at a cluster level. More code changes are required to run this at a namespace level - https://sdk.operatorframework.io/docs/building-operators/golang/operator-scope/#configuring-watch-namespaces-dynamically
 
-Now let's test this, by creating a mysql cr. 
+Now let's test this, by creating a mysql cr. First create a new project/namespace with an imagepullsecret attached to the serviceaccount. You can do that with this new target I've created:
+```
+NEW_PROJECT=test1 docker_password=xxxx make new-project
+```
+
+Now we create our cr:
 
 ```
-oc new-project test
-oc create secret docker-registry docker-io --docker-server=docker.io --docker-username=schowdhuryibm  --docker-password=xxxxxx --docker-email=sher.chowdhury@ibm.com
-
 oc apply -f config/samples/wordpress_v1_mysql.yaml
 mysql.wordpress.codingbee.net/mysql-sample created
 
@@ -763,7 +741,88 @@ However did find this old deprecated guide:
 
 also some of these search restulrs might be useful: https://github.com/search?l=Go&q=TestReconcile&type=Code
 
+Here are the tests I've added - https://github.com/Sher-Chowdhury/mysql-operator/commit/984dd286c9baffb5ee3e9a14a28b967462187f65
+
+
+```
+make test
+```
+
+Note: in some bits I used the fakeclient. This client is a little limited because you can't easily use it to return a generic error. But is useful for returning `errors.IsNotFound` errors. That's why for a lot of tests i ended up using a mockclient instead.   
+
+
 Now deploy the operator. Theres 2 ways to do that. deploy it as a pod, or run it locally. 
+
+
+## Webhooks
+
+
+webhooks - https://book.kubebuilder.io/reference/webhook-overview.html
+
+There are 3 types of webhooks:
+
+1. admission webhooks
+   1. validating/defaulting admission webhooks
+   2. mutating admission webhooks
+2. authorization webhook 
+3. CRD conversion webhook
+
+
+
+For now I'll just look at the admission webhook.
+
+
+What if one of your fields is required, but the user tries to apply it without setting it. 
+
+Then you have two options. 
+
+1. get your opertor to set it as a default value. 
+2. ..or if that's not possible send an error to the user to prompt them to supply the missing info. 
+
+That's possible by setting up [validating/defaulting admission webhooks](https://book.kubebuilder.io/cronjob-tutorial/webhook-implementation.html?highlight=defaulting#implementing-defaultingvalidating-webhooks)
+
+Note, you can also do validation using "crd validation", by inserting "+kubebuilder" statements in the *_types.go file. But webhooks is the more versatile and powerful approach. 
+
+
+Here's the command to create the boilerplate. 
+
+
+```
+operator-sdk create webhook --group wordpress --version v1 --kind Mysql --defaulting --programmatic-validation
+```
+
+I'm planning to use my webhooks to do both, `--defaulting` and `--programmatic-validation`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### Approach 1 - Deploy operator as a container (production approach)
 
