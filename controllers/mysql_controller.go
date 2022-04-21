@@ -106,8 +106,6 @@ func (r *MysqlReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 // deploymentForMemcached returns a Deployment object for data from m.
 func (r *MysqlReconciler) deploymentForMysql(cr *wordpressv1.Mysql) *appsv1.Deployment {
-	// lbls := labelsForApp(cr.Name)
-
 	var replicas int32 = 1
 
 	mysqlEnvVars := cr.Spec.Environment
@@ -146,7 +144,7 @@ func (r *MysqlReconciler) deploymentForMysql(cr *wordpressv1.Mysql) *appsv1.Depl
 
 	deploymentObject := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-msyql",
+			Name:      cr.Name + "-mysql",
 			Namespace: cr.Namespace,
 		},
 		Spec: appsv1.DeploymentSpec{

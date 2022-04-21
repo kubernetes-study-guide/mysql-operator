@@ -751,11 +751,17 @@ NAME                                  READY   STATUS    RESTARTS   AGE
 mysql-sample-msyql-68ff9844b4-fsbn7   1/1     Running   0          89s
 ```
 
-Now, need to add unit tests:
+Now, need to add unit tests, but unfortunately there are not unit-test docs, the only docs I can find are for component/integration tests:
 
 - https://sdk.operatorframework.io/docs/building-operators/golang/testing/
 - https://book.kubebuilder.io/cronjob-tutorial/writing-tests.html
 
+However did find this old deprecated guide:
+
+- https://v0-18-x.sdk.operatorframework.io/docs/golang/unit-testing/
+
+
+also some of these search restulrs might be useful: https://github.com/search?l=Go&q=TestReconcile&type=Code
 
 Now deploy the operator. Theres 2 ways to do that. deploy it as a pod, or run it locally. 
 
