@@ -750,6 +750,20 @@ make test
 
 Note: in some bits I used the fakeclient. This client is a little limited because you can't easily use it to return a generic error. But is useful for returning `errors.IsNotFound` errors. That's why for a lot of tests i ended up using a mockclient instead.   
 
+After the tests are added, I get 100% coverage:
+
+```
+$ make test
+/Users/sherchowdhury/operators/mysql-operator/bin/controller-gen rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+/Users/sherchowdhury/operators/mysql-operator/bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
+go fmt ./...
+go vet ./...
+KUBEBUILDER_ASSETS="/Users/sherchowdhury/Library/Application Support/io.kubebuilder.envtest/k8s/1.23.3-darwin-amd64" go test ./... -coverprofile cover.out
+?       github.com/Sher-Chowdhury/mysql-operator        [no test files]
+?       github.com/Sher-Chowdhury/mysql-operator/api/v1 [no test files]
+ok      github.com/Sher-Chowdhury/mysql-operator/controllers    6.371s  coverage: 100.0% of statements
+```
+
 
 Now deploy the operator. Theres 2 ways to do that. deploy it as a pod, or run it locally. 
 
@@ -788,13 +802,81 @@ Here's the command to create the boilerplate.
 
 
 ```
-operator-sdk create webhook --group wordpress --version v1 --kind Mysql --defaulting --programmatic-validation
+$ operator-sdk create webhook --group wordpress --version v1 --kind Mysql --defaulting --programmatic-validation
+
+Writing kustomize manifests for you to edit...
+Writing scaffold for you to edit...
+api/v1/mysql_webhook.go
+Update dependencies:
+$ go mod tidy
+Running make:
+$ make generate
+go: creating new go.mod: module tmp
+Downloading sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0
+go get: installing executables with 'go get' in module mode is deprecated.
+        To adjust and download dependencies of the current module, use 'go get -d'.
+        To install using requirements of the current module, use 'go install'.
+        To install ignoring the current module, use 'go install' with a version,
+        like 'go install example.com/cmd@latest'.
+        For more information, see https://golang.org/doc/go-get-install-deprecation
+        or run 'go help get' or 'go help install'.
+go get: added github.com/fatih/color v1.12.0
+.
+.
+.
+go get: added sigs.k8s.io/structured-merge-diff/v4 v4.1.2
+go get: added sigs.k8s.io/yaml v1.3.0
+/Users/sherchowdhury/operators/mysql-operator/bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
+Next: implement your new Webhook and generate the manifests with:
+$ make manifests
 ```
 
-I'm planning to use my webhooks to do both, `--defaulting` and `--programmatic-validation`
+Note: I'm planning to use my webhooks to do both, `--defaulting` and `--programmatic-validation`
+
+this generated the following files and changes:
+
+```
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   PROJECT
+        modified:   api/v1/zz_generated.deepcopy.go
+        modified:   main.go
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        api/v1/mysql_webhook.go
+        api/v1/webhook_suite_test.go
+        config/certmanager/
+        config/default/manager_webhook_patch.yaml
+        config/default/webhookcainjection_patch.yaml
+        config/webhook/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+$ tree config/certmanager/
+config/certmanager/
+├── certificate.yaml
+├── kustomization.yaml
+└── kustomizeconfig.yaml
+
+0 directories, 3 files
+
+$ tree config/webhook/
+config/webhook/
+├── kustomization.yaml
+├── kustomizeconfig.yaml
+└── service.yaml
+
+0 directories, 3 files
+```
 
 
-
+Ref - https://github.com/Sher-Chowdhury/mysql-operator/commit/2e246c555f3aa64371f8b8eb90d5151dbc680608
 
 
 
